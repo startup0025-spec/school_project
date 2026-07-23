@@ -132,8 +132,8 @@ assert(
 );
 assert(
   'AC4: GitHub Pages URL로만 패칭',
-  localPlacesSource.includes('haetae05.github.io/Anyway_the_Sea'),
-  'haetae05.github.io 있음',
+  localPlacesSource.includes('startup0025-spec.github.io/school_project'),
+  'startup0025-spec.github.io 종속성 확인',
   'found'
 );
 

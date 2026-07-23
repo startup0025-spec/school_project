@@ -7,7 +7,7 @@
  *   - TOUR_API_KEY       : 한국관광공사 TourAPI 4.0 서비스 키 (decoding 불필요한 값)
  *   - OPENAI_API_KEY     : OpenAI API 키 (GitHub Secrets로만 주입, 절대 하드코딩 금지)
  *   - GITHUB_TOKEN       : GitHub Pages 배포용 토큰 (GitHub Actions 자동 주입)
- *   - GITHUB_REPOSITORY  : "haetae05/Anyway_the_Sea" (GitHub Actions 자동 주입)
+ *   - GITHUB_REPOSITORY  : "startup0025-spec/school_project" (GitHub Actions 구동 시)
  *
  * [파이프라인 순서]:
  *  1. 한국관광공사 TourAPI 4.0 → 부산 자연/공원/해변 명소 목록 수집
