@@ -93,7 +93,7 @@ export interface NormalizedWaterQuality {
 export const fetchRiverWaterLevel = async (): Promise<NormalizedWaterLevel[]> => {
   const { BUSAN_SERVICE_KEY } = getAPIKeys();
   const response = await client.get<BusanWaterLevelResponse>(
-    'http://apis.data.go.kr/6260000/BusanRvrwtLevelInfoService/getRvrwtLevelInfo',
+    'https://apis.data.go.kr/6260000/BusanRvrwtLevelInfoService/getRvrwtLevelInfo',
     {
       params: {
         serviceKey: BUSAN_SERVICE_KEY,
@@ -140,7 +140,7 @@ export const fetchRiverWaterQuality = async (
 ): Promise<NormalizedWaterQuality[]> => {
   const { BUSAN_SERVICE_KEY } = getAPIKeys();
   const response = await client.get<BusanWaterQualityResponse>(
-    'http://apis.data.go.kr/6260000/RiverQualityService/getRiverQualityStation',
+    'https://apis.data.go.kr/6260000/RiverQualityService/getRiverQualityStation',
     {
       params: {
         serviceKey: BUSAN_SERVICE_KEY,

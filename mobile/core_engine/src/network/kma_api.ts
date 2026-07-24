@@ -41,7 +41,7 @@ export const fetchUltraShortForecast = async (
   const { KMA_SERVICE_KEY } = getAPIKeys();
 
   const response = await client.get<KMAResponse>(
-    'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst',
+    'https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst',
     {
       params: {
         serviceKey: KMA_SERVICE_KEY,
@@ -80,7 +80,7 @@ export interface KMAWarningResponse {
 export const fetchWeatherWarning = async (): Promise<KMAWarningResponse> => {
   const { KMA_SERVICE_KEY } = getAPIKeys();
   const response = await client.get<KMAWarningResponse>(
-    'http://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnList',
+    'https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnList',
     {
       params: {
         serviceKey: KMA_SERVICE_KEY,

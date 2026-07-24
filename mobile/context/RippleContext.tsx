@@ -192,14 +192,19 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
       placeName,
       customText,
     };
-    setDiaryEntries((prev) => {
-      const next = [entry, ...prev];
-      AsyncStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(next)).catch((e) =>
-        console.warn('[RippleContext] 일기장 저장 에러:', e)
-      );
-      return next;
-    });
+    setDiaryEntries((prev) => [entry, ...prev]);
   }, [waterSource]);
+
+  const isInitialMount = React.useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    AsyncStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(diaryEntries)).catch((e) =>
+      console.warn('[RippleContext] 일기장 저장 에러:', e)
+    );
+  }, [diaryEntries]);
 
   const value = useMemo<RippleContextValue>(
     () => ({
