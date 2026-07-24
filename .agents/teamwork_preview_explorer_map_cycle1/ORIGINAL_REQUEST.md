@@ -1,0 +1,8 @@
+## 2026-07-16T00:08:05Z
+You are teamwork_preview_explorer. Your working directory is C:\Users\user\Desktop\school_contest\Anyway_the_Sea\.agents\teamwork_preview_explorer_map_cycle1\.
+Your task is to analyze the blueprints at C:\Users\user\Desktop\school_contest\blueprints\교육청 대회용 앱 간단 설계서.txt, the map.tsx screen at C:\Users\user\Desktop\school_contest\Anyway_the_Sea\mobile\app\(tabs)\map.tsx, the empty home_screen.tsx at C:\Users\user\Desktop\school_contest\Anyway_the_Sea\mobile\lib\views\home_screen.tsx, the local_places.ts file at C:\Users\user\Desktop\school_contest\Anyway_the_Sea\mobile\core_engine\src\database\local_places.ts, and mockData.ts at C:\Users\user\Desktop\school_contest\Anyway_the_Sea\mobile\constants\mockData.ts.
+Focus: Cycle 1: Baseline Architecture & WebView Integration Strategy.
+Suggest a design for integrating Kakao Map API in React Native Expo. Specifically, since we are using React Native / Expo, how should we render the Kakao Map API? (e.g. using react-native-webview and a local or CDN HTML page that loads the Kakao Map JS SDK). How do we load the JS SDK inside WebView, initialize the map, and coordinate map styling and coordinates?
+Write your detailed findings and proposal to C:\Users\user\Desktop\school_contest\Anyway_the_Sea\.agents\teamwork_preview_explorer_map_cycle1\analysis.md.
+Make sure to explain why we use react-native-webview, how the HTML file will be hosted or bundled, and how to configure the Kakao developer console (Web platform domain configuration).
+Report back with send_message to the orchestrator (conversation ID: c962bb36-f85e-4209-b770-96ed50d997f4) once done.

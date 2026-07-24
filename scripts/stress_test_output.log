@@ -1,0 +1,201 @@
+﻿--------------------------------------------------
+ANYWAY THE SEA ??PROGRAMMATIC STRESS TEST SUITE
+Timestamp: 2026-07-24T03:26:03.365Z
+Node Version: v24.16.0
+PID: 39316
+--------------------------------------------------
+
+==================================================
+RUNNING BENCHMARK: Haversine Distance (Pipeline JS)
+Iterations: 100,000 | Payload Size: 100,000 calls / 1,000 random Busan coordinate pairs
+==================================================
+[Results]
+Total Duration       : 4.906 ms
+Avg Time per Call    : 0.000049 ms (0.049 쨉s)
+Throughput           : 20,384,866 ops/sec
+Initial Memory       : heapUsed: 8.32 MB, heapTotal: 11.50 MB, rss: 55.53 MB
+Peak Heap Used       : 9.30 MB (Peak RSS: 60.57 MB)
+Final Memory         : heapUsed: 8.34 MB, heapTotal: 11.25 MB, rss: 60.70 MB
+Heap Growth (Delta)  : 19.11 KB (0.02 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Haversine Distance (Mobile TS with Validation)
+Iterations: 100,000 | Payload Size: 100,000 calls / 1,000 random Busan coordinate pairs
+==================================================
+[Results]
+Total Duration       : 4.834 ms
+Avg Time per Call    : 0.000048 ms (0.048 쨉s)
+Throughput           : 20,685,090 ops/sec
+Initial Memory       : heapUsed: 8.34 MB, heapTotal: 11.25 MB, rss: 60.55 MB
+Peak Heap Used       : 10.12 MB (Peak RSS: 62.29 MB)
+Final Memory         : heapUsed: 8.37 MB, heapTotal: 13.25 MB, rss: 61.72 MB
+Heap Growth (Delta)  : 33.45 KB (0.03 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: KMA Grid LCC Projection (latLngToGrid)
+Iterations: 100,000 | Payload Size: 100,000 calls / WGS84 to KMA Grid (nx, ny)
+==================================================
+[Results]
+Total Duration       : 7.137 ms
+Avg Time per Call    : 0.000071 ms (0.071 쨉s)
+Throughput           : 14,012,274 ops/sec
+Initial Memory       : heapUsed: 8.43 MB, heapTotal: 13.25 MB, rss: 62.19 MB
+Peak Heap Used       : 10.41 MB (Peak RSS: 62.93 MB)
+Final Memory         : heapUsed: 8.48 MB, heapTotal: 13.25 MB, rss: 61.23 MB
+Heap Growth (Delta)  : 54.48 KB (0.05 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Find Nearest Water Station (Default 5 Stations DB)
+Iterations: 50,000 | Payload Size: 50,000 calls / 5 Stations DB
+==================================================
+[Results]
+Total Duration       : 14.433 ms
+Avg Time per Call    : 0.000289 ms (0.289 쨉s)
+Throughput           : 3,464,379 ops/sec
+Initial Memory       : heapUsed: 8.42 MB, heapTotal: 13.25 MB, rss: 61.26 MB
+Peak Heap Used       : 10.42 MB (Peak RSS: 63.06 MB)
+Final Memory         : heapUsed: 8.43 MB, heapTotal: 13.25 MB, rss: 62.71 MB
+Heap Growth (Delta)  : 14.88 KB (0.01 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Find Nearest Water Station (Scaled 100 Stations DB)
+Iterations: 50,000 | Payload Size: 50,000 calls / 100 Stations DB
+==================================================
+[Results]
+Total Duration       : 153.983 ms
+Avg Time per Call    : 0.003080 ms (3.080 쨉s)
+Throughput           : 324,710 ops/sec
+Initial Memory       : heapUsed: 8.36 MB, heapTotal: 13.25 MB, rss: 62.77 MB
+Peak Heap Used       : 10.38 MB (Peak RSS: 62.77 MB)
+Final Memory         : heapUsed: 8.38 MB, heapTotal: 13.25 MB, rss: 62.48 MB
+Heap Growth (Delta)  : 15.23 KB (0.01 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Sort Places by Distance (N=10 Places)
+Iterations: 10,000 | Payload Size: N=10 places per array sort
+==================================================
+[Results]
+Total Duration       : 25.729 ms
+Avg Time per Call    : 0.002573 ms (2.573 쨉s)
+Throughput           : 388,672 ops/sec
+Initial Memory       : heapUsed: 8.37 MB, heapTotal: 13.25 MB, rss: 62.50 MB
+Peak Heap Used       : 10.06 MB (Peak RSS: 63.00 MB)
+Final Memory         : heapUsed: 8.38 MB, heapTotal: 13.25 MB, rss: 62.47 MB
+Heap Growth (Delta)  : 11.36 KB (0.01 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Sort Places by Distance (N=100 Places)
+Iterations: 10,000 | Payload Size: N=100 places per array sort
+==================================================
+[Results]
+Total Duration       : 604.183 ms
+Avg Time per Call    : 0.060418 ms (60.418 쨉s)
+Throughput           : 16,551 ops/sec
+Initial Memory       : heapUsed: 8.30 MB, heapTotal: 13.25 MB, rss: 62.55 MB
+Peak Heap Used       : 10.14 MB (Peak RSS: 62.58 MB)
+Final Memory         : heapUsed: 8.34 MB, heapTotal: 13.25 MB, rss: 62.67 MB
+Heap Growth (Delta)  : 35.88 KB (0.04 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Sort Places by Distance (N=500 Places)
+Iterations: 2,000 | Payload Size: N=500 places per array sort
+==================================================
+[Results]
+Total Duration       : 857.885 ms
+Avg Time per Call    : 0.428943 ms (428.943 쨉s)
+Throughput           : 2,331 ops/sec
+Initial Memory       : heapUsed: 8.39 MB, heapTotal: 13.25 MB, rss: 62.68 MB
+Peak Heap Used       : 11.47 MB (Peak RSS: 66.68 MB)
+Final Memory         : heapUsed: 8.39 MB, heapTotal: 17.25 MB, rss: 66.70 MB
+Heap Growth (Delta)  : 1.34 KB (0.00 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Sort Places by Distance OPTIMIZED O(N) Pre-computed (N=500 Places)
+Iterations: 2,000 | Payload Size: N=500 places per array sort (Decorated O(N) Distance Pre-compute)
+==================================================
+[Results]
+Total Duration       : 131.336 ms
+Avg Time per Call    : 0.065668 ms (65.668 쨉s)
+Throughput           : 15,228 ops/sec
+Initial Memory       : heapUsed: 8.39 MB, heapTotal: 17.25 MB, rss: 66.72 MB
+Peak Heap Used       : 11.11 MB (Peak RSS: 66.89 MB)
+Final Memory         : heapUsed: 8.40 MB, heapTotal: 17.25 MB, rss: 66.96 MB
+Heap Growth (Delta)  : 16.45 KB (0.02 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+--------------------------------------------------
+[BOTTLENECK ANALYSIS] SortPlacesByDistance (N=500)
+Unoptimized Time : 857.89 ms (0.4289 ms/call)
+Optimized Time   : 131.34 ms (0.0657 ms/call)
+Speedup Factor   : 6.53x FASTER
+--------------------------------------------------
+
+==================================================
+RUNNING BENCHMARK: Geofence Hysteresis State Machine & Speed Classification
+Iterations: 100,000 | Payload Size: 100,000 state evaluation transitions
+==================================================
+[Results]
+Total Duration       : 1.554 ms
+Avg Time per Call    : 0.000016 ms (0.016 쨉s)
+Throughput           : 64,370,775 ops/sec
+Initial Memory       : heapUsed: 8.40 MB, heapTotal: 17.50 MB, rss: 66.97 MB
+Peak Heap Used       : 8.73 MB (Peak RSS: 67.39 MB)
+Final Memory         : heapUsed: 8.41 MB, heapTotal: 17.50 MB, rss: 67.02 MB
+Heap Growth (Delta)  : 11.01 KB (0.01 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Place Keyword Filtering & Water Type Inferencing
+Iterations: 100,000 | Payload Size: 100,000 parsing & regex match operations
+==================================================
+[Results]
+Total Duration       : 62.272 ms
+Avg Time per Call    : 0.000623 ms (0.623 쨉s)
+Throughput           : 1,605,858 ops/sec
+Initial Memory       : heapUsed: 8.41 MB, heapTotal: 17.50 MB, rss: 67.09 MB
+Peak Heap Used       : 12.30 MB (Peak RSS: 67.58 MB)
+Final Memory         : heapUsed: 8.44 MB, heapTotal: 17.50 MB, rss: 67.12 MB
+Heap Growth (Delta)  : 31.95 KB (0.03 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+RUNNING BENCHMARK: Sonification Parameter Math Transformations
+Iterations: 100,000 | Payload Size: 100,000 parameter calculation iterations
+==================================================
+[Results]
+Total Duration       : 3.289 ms
+Avg Time per Call    : 0.000033 ms (0.033 쨉s)
+Throughput           : 30,399,756 ops/sec
+Initial Memory       : heapUsed: 8.43 MB, heapTotal: 17.50 MB, rss: 67.13 MB
+Peak Heap Used       : 12.43 MB (Peak RSS: 67.59 MB)
+Final Memory         : heapUsed: 8.44 MB, heapTotal: 17.50 MB, rss: 67.16 MB
+Heap Growth (Delta)  : 10.58 KB (0.01 MB)
+Memory Leak Status   : PASS: Stable Heap
+
+==================================================
+SUMMARY BENCHMARK EXECUTIVE TABLE
+==================================================
+| Index | Benchmark Name                                                       | Iterations | Total (ms) | Avg (us/call) | Ops/sec      | Peak Heap | Heap Delta |
+|-------|----------------------------------------------------------------------|------------|------------|---------------|--------------|-----------|------------|
+|     0 | Haversine Distance (Pipeline JS)                                     |    100,000 |       4.91 |          0.05 |   20,384,866 |   9.30 MB |   19.11 KB |
+|     1 | Haversine Distance (Mobile TS with Validation)                       |    100,000 |       4.83 |          0.05 |   20,685,090 |  10.12 MB |   33.45 KB |
+|     2 | KMA Grid LCC Projection (latLngToGrid)                               |    100,000 |       7.14 |          0.07 |   14,012,274 |  10.41 MB |   54.48 KB |
+|     3 | Find Nearest Water Station (Default 5 Stations DB)                   |     50,000 |      14.43 |          0.29 |    3,464,379 |  10.42 MB |   14.88 KB |
+|     4 | Find Nearest Water Station (Scaled 100 Stations DB)                  |     50,000 |     153.98 |          3.08 |      324,710 |  10.38 MB |   15.23 KB |
+|     5 | Sort Places by Distance (N=10 Places)                                |     10,000 |      25.73 |          2.57 |      388,672 |  10.06 MB |   11.36 KB |
+|     6 | Sort Places by Distance (N=100 Places)                               |     10,000 |     604.18 |         60.42 |       16,551 |  10.14 MB |   35.88 KB |
+|     7 | Sort Places by Distance (N=500 Places)                               |      2,000 |     857.89 |        428.94 |        2,331 |  11.47 MB |    1.34 KB |
+|     8 | Sort Places by Distance OPTIMIZED O(N) Pre-computed (N=500 Places)   |      2,000 |     131.34 |         65.67 |       15,228 |  11.11 MB |   16.45 KB |
+|     9 | Geofence Hysteresis State Machine & Speed Classification             |    100,000 |       1.55 |          0.02 |   64,370,775 |   8.73 MB |   11.01 KB |
+|    10 | Place Keyword Filtering & Water Type Inferencing                     |    100,000 |      62.27 |          0.62 |    1,605,858 |  12.30 MB |   31.95 KB |
+|    11 | Sonification Parameter Math Transformations                          |    100,000 |       3.29 |          0.03 |   30,399,756 |  12.43 MB |   10.58 KB |
+
+[STRESS TEST COMPLETED SUCCESSFULLY]

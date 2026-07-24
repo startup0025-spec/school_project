@@ -72,33 +72,25 @@ export function sortPlacesByDistance<T extends { latitude: number; longitude: nu
   userCoords: { latitude: number; longitude: number }
 ): T[] {
   if (!placesList || placesList.length === 0) return [];
+  const validPlaces = placesList.filter((p): p is T => p != null);
   if (!isValidCoordinate(userCoords.latitude, userCoords.longitude)) {
-    return placesList.filter((p): p is T => p != null);
+    return validPlaces;
   }
 
-  return [...placesList]
-    .sort((a, b) => {
-      if (!a && !b) return 0;
-      if (!a) return 1;
-      if (!b) return -1;
+  const decorated = validPlaces.map(place => {
+    const dist = getHaversineDistance(
+      userCoords.latitude,
+      userCoords.longitude,
+      place.latitude,
+      place.longitude
+    );
+    return {
+      place,
+      dist: Number.isNaN(dist) ? Number.MAX_VALUE : dist
+    };
+  });
 
-      const distA = getHaversineDistance(
-        userCoords.latitude,
-        userCoords.longitude,
-        a.latitude,
-        a.longitude
-      );
-      const distB = getHaversineDistance(
-        userCoords.latitude,
-        userCoords.longitude,
-        b.latitude,
-        b.longitude
-      );
+  decorated.sort((a, b) => a.dist - b.dist);
 
-      const validA = Number.isNaN(distA) ? Number.MAX_VALUE : distA;
-      const validB = Number.isNaN(distB) ? Number.MAX_VALUE : distB;
-
-      return validA - validB;
-    })
-    .filter((p): p is T => p != null);
+  return decorated.map(item => item.place);
 }

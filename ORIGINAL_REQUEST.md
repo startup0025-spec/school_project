@@ -426,3 +426,30 @@ Integrity mode: benchmark
 - [ ] 메모리 누수 방어: `stopAmbientSound` 호출 시 배열에 담긴 모든 오디오 인스턴스가 100% unload 해제되어야 함.
 - [ ] 오프라인 폴백: 네트워크 에러/지연 시 번들된 오프라인 파일로 대체 재생되는 fallback 방어 로직이 완벽하게 구현되어 있어야 함.
 - [ ] 코러스 이펙트 작동: 바다/강물 소리 3개가 각각 다른 Pitch(Rate)와 Time Offset으로 겹쳐 재생되는지 논리적 교차 검증 통과.
+
+## Follow-up — 2026-07-24T12:18:53+09:00
+
+<USER_REQUEST>
+Conduct a forensic, exhaustive pre-build audit and stress test of the React Native/Expo codebase to guarantee absolute stability (zero crashes) when compiled to an APK. The audit must rigorously analyze all pipelines, signal flows, UI/UX, lag, RAM usage, and code efficiency. 
+
+Working directory: C:\Users\user\Desktop\school_contest\Anyway_the_Sea
+Integrity mode: benchmark (Absolute Strictness: No fakes, no guessing)
+
+## Requirements
+
+### R1. Deep Codebase & Pipeline Audit
+Analyze the entire codebase architecture and data pipelines (API connections, state management). You must actually read the source code. Guessing or hallucinating file contents is strictly forbidden.
+
+### R2. Programmatic Stress Testing
+Evaluate the application for rendering lag, excessive RAM usage, and algorithmic efficiency. You must write and execute actual stress-test scripts (e.g., running core logic 10,000 times) to prove there are no memory leaks or infinite loops.
+
+### R3. UI/UX & Emotional Design Review
+Audit the user interface against the 3-Layer Emotional UX rules (Visceral, Behavioral, Reflective) defined in `AGENTS.md`. Ensure smooth transitions and premium aesthetics.
+
+## Acceptance Criteria
+
+### Verification & Honesty
+- [ ] Every claim about a bug or optimization must cite the exact file path and line number from the actual codebase.
+- [ ] The team must execute at least one programmatic stress test (e.g., a Node.js script testing `haversine.ts` or API fetching) and report the actual console output/execution time.
+- [ ] No dummy data or "mocked" results allowed in the final report. If a test fails, report the raw failure log.
+</USER_REQUEST>

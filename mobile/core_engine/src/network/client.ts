@@ -5,7 +5,11 @@ import { getFallbackData } from '../../../constants/mockData';
 
 const MAX_CACHE_ENTRIES = 100;
 
+let isPruning = false;
+
 async function pruneCacheIfNeeded() {
+  if (isPruning) return;
+  isPruning = true;
   try {
     const keys = await AsyncStorage.getAllKeys();
     const cacheKeys = keys.filter((k) => k.startsWith('api_cache:'));
@@ -16,6 +20,8 @@ async function pruneCacheIfNeeded() {
     }
   } catch (err) {
     console.warn('[client.ts] Pruning cache failed:', err);
+  } finally {
+    isPruning = false;
   }
 }
 

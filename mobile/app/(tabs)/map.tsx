@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Image, Pressable, Linking, Modal, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
+
+let WebView: any = null;
+if (Platform.OS !== 'web') {
+  WebView = require('react-native-webview').WebView;
+}
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -604,25 +608,35 @@ export default function MapScreen() {
           pointerEvents={isFocused ? 'auto' : 'none'} 
           style={webViewContainerStyle}
         >
-          <WebView
-            ref={webViewRef}
-            source={{ html: htmlContent, baseUrl: 'https://startup0025-spec.github.io' }}
-            onMessage={handleMessage}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            scalesPageToFit={false}
-            style={styles.webView}
-            startInLoadingState={true}
-            onContentProcessDidTerminate={() => {
-              console.warn('[MapScreen] WebView content process terminated. Reloading WebView.');
-              webViewRef.current?.reload();
-            }}
-            renderLoading={() => (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.primary} />
-              </View>
-            )}
-          />
+          {Platform.OS === 'web' ? (
+            <iframe
+              srcDoc={htmlContent}
+              style={{ width: '100%', height: '100%', border: 'none' } as any}
+              title="Kakao Map"
+            />
+          ) : (
+            WebView && (
+              <WebView
+                ref={webViewRef}
+                source={{ html: htmlContent, baseUrl: 'https://startup0025-spec.github.io' }}
+                onMessage={handleMessage}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                scalesPageToFit={false}
+                style={styles.webView}
+                startInLoadingState={true}
+                onContentProcessDidTerminate={() => {
+                  console.warn('[MapScreen] WebView content process terminated. Reloading WebView.');
+                  webViewRef.current?.reload();
+                }}
+                renderLoading={() => (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                  </View>
+                )}
+              />
+            )
+          )}
         </View>
         <View style={[styles.headerOverlay, { paddingTop: insets.top + 12, position: 'absolute', top: 0, left: 0 }]}>
           <Text style={styles.eyebrow}>오늘 가기 가장 조용한 곳</Text>
