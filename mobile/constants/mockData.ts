@@ -48,8 +48,8 @@ export interface QuietSpot extends Place {
 export const QUIET_SPOTS: QuietSpot[] = [
   {
     id: 's1',
-    name: '수성천 산책로',
-    description: '여기 지금 사람 아무도 없대요. 혹시 근처면 그냥 한 번 가보든가요.',
+    name: '(네트워크 오류) 조용한 강가',
+    description: '인터넷 연결 오류로 실제 장소 이름을 불러오지 못했습니다. 오프라인 지도를 표시합니다.',
     walk: '도보 12분',
     latitude: 35.2031, // 세월교 (수영강)
     longitude: 129.1198,
@@ -60,8 +60,8 @@ export const QUIET_SPOTS: QuietSpot[] = [
   },
   {
     id: 's2',
-    name: '온천천 하류길',
-    description: '오늘은 물소리가 유독 좋대요. 잠깐 들러도 괜찮을 것 같아요.',
+    name: '(네트워크 오류) 한적한 하천',
+    description: '인터넷 연결 오류로 실제 장소 이름을 불러오지 못했습니다. 오프라인 지도를 표시합니다.',
     walk: '도보 18분',
     latitude: 35.1978, // 세병교 (온천천)
     longitude: 129.0837,
@@ -72,8 +72,8 @@ export const QUIET_SPOTS: QuietSpot[] = [
   },
   {
     id: 's3',
-    name: '장전천 벤치',
-    description: '사람도 없고 그늘도 있어서 앉아있기 딱 좋대요.',
+    name: '(네트워크 오류) 시냇가 벤치',
+    description: '인터넷 연결 오류로 실제 장소 이름을 불러오지 못했습니다. 오프라인 지도를 표시합니다.',
     walk: '도보 9분',
     latitude: 35.2318, // 부곡교 (온천천/장전천 인근)
     longitude: 129.0843,
