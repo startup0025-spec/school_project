@@ -4,34 +4,7 @@ import { AudioParams } from './models/audio_params';
 import { getPlaces } from './database/local_places';
 import { fetchWeatherWarning, fetchUltraShortForecast } from './network/kma_api';
 import { fetchRiverWaterLevel, fetchRiverWaterQuality } from './network/busan_api';
-
-const EARTH_RADIUS_M = 6371000;
-
-/**
- * Calculates Haversine distance in meters between two coordinates.
- */
-function haversineDistance(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
-
-  const clampedA = Math.max(0, Math.min(1, a));
-  const c = 2 * Math.atan2(Math.sqrt(clampedA), Math.sqrt(1 - clampedA));
-  return EARTH_RADIUS_M * c;
-}
+import { getHaversineDistance } from './utils/haversine';
 
 const levelMap: Record<SafetyLevel, number> = {
   [SafetyLevel.Safe]: 0,
@@ -156,7 +129,7 @@ export async function checkGeofenceAndSafety(userLat: number, userLng: number): 
   let minDistance = Infinity;
 
   for (const place of places) {
-    const dist = haversineDistance(userLat, userLng, place.latitude, place.longitude);
+    const dist = getHaversineDistance(userLat, userLng, place.latitude, place.longitude);
     if (dist < minDistance) {
       minDistance = dist;
       closestPlace = place;

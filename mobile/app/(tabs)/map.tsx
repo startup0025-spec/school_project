@@ -7,11 +7,18 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useIsFocused } from '@react-navigation/native';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { useColors } from '@/hooks/useColors';
 import { QUIET_SPOTS } from '@/constants/mockData';
 import { getPlaces, subscribeToPlacesCache } from '@/core_engine/src/database/local_places';
 import { Place } from '@/core_engine/src/models/place_model';
 import { useRipple } from '@/context/RippleContext';
+import {
+  getHaversineDistance,
+  sortPlacesByDistance,
+  isValidCoordinate,
+} from '@/core_engine/src/utils/haversine';
 
 // Inline HTML layout with Kakao Map event handlers, grayscale theme, and message bridge
 const KAKAO_MAP_HTML = `
@@ -286,27 +293,6 @@ const KAKAO_MAP_HTML = `
 </html>
 `;
 
-// Haversine distance helper (meters) - strict boundary coordinates checks
-function getHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  if (
-    lat1 === null || lat1 === undefined || typeof lat1 !== 'number' || isNaN(lat1) ||
-    lon1 === null || lon1 === undefined || typeof lon1 !== 'number' || isNaN(lon1) ||
-    lat2 === null || lat2 === undefined || typeof lat2 !== 'number' || isNaN(lat2) ||
-    lon2 === null || lon2 === undefined || typeof lon2 !== 'number' || isNaN(lon2)
-  ) {
-    return NaN;
-  }
-  const R = 6371000; // Earth's radius in meters
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
 // Calculate walk time dynamically or fallback
 const getWalkTime = (place: Place, userCoords?: { latitude: number; longitude: number } | null): string => {
   if (userCoords && userCoords.latitude !== null && userCoords.latitude !== undefined && userCoords.longitude !== null && userCoords.longitude !== undefined) {
@@ -356,16 +342,46 @@ export default function MapScreen() {
   const [diaryModalVisible, setDiaryModalVisible] = useState(false);
   const [diaryText, setDiaryText] = useState('');
 
-  // 1. Initial Places Cache Fetch
+  const SORT_COOLDOWN_MS = 180000;
+  const lastSortTimeRef = useRef<number>(0);
+  const indexRef = useRef<number>(index);
+  indexRef.current = index;
+  const placesRef = useRef<Place[]>(places);
+  placesRef.current = places;
+  const userLocationRef = useRef<{ latitude: number; longitude: number } | null>(userLocation);
+  userLocationRef.current = userLocation;
+
+  // 1. Initial Places Cache Fetch & Background Location Read (R1, R2)
   useEffect(() => {
     async function initPlaces() {
       try {
         const data = await getPlaces();
-        if (data && data.length > 0) {
-          setPlaces(data);
-        } else {
-          setPlaces(QUIET_SPOTS);
+        const initialPlaces = data && data.length > 0 ? data : QUIET_SPOTS;
+
+        const storedStateRaw = await AsyncStorage.getItem('@anywayTheSea:bg_location_state');
+        if (storedStateRaw) {
+          const storedState = JSON.parse(storedStateRaw);
+          if (
+            storedState?.lastLatitude != null &&
+            storedState?.lastLongitude != null &&
+            isValidCoordinate(storedState.lastLatitude, storedState.lastLongitude)
+          ) {
+            const { lastLatitude, lastLongitude } = storedState;
+            setUserLocation({ latitude: lastLatitude, longitude: lastLongitude });
+
+            const sortedPlaces = sortPlacesByDistance(initialPlaces, {
+              latitude: lastLatitude,
+              longitude: lastLongitude,
+            });
+
+            setPlaces(sortedPlaces);
+            setIndex(0);
+            lastSortTimeRef.current = Date.now();
+            return;
+          }
         }
+
+        setPlaces(initialPlaces);
       } catch (err) {
         console.warn('[MapScreen] Error loading places, falling back to mock:', err);
         setPlaces(QUIET_SPOTS);
@@ -378,16 +394,29 @@ export default function MapScreen() {
   useEffect(() => {
     const unsubscribe = subscribeToPlacesCache((updatedPlaces) => {
       if (updatedPlaces && updatedPlaces.length > 0) {
-        setPlaces(updatedPlaces);
+        const currentLocation = userLocationRef.current;
+        const currentPlaces = placesRef.current;
+        const currentSelectedId = currentPlaces[indexRef.current]?.id;
+
+        if (currentLocation && isValidCoordinate(currentLocation.latitude, currentLocation.longitude)) {
+          const sorted = sortPlacesByDistance(updatedPlaces, currentLocation);
+          const newIdx = currentSelectedId ? sorted.findIndex((p) => p.id === currentSelectedId) : -1;
+          setPlaces(sorted);
+          setIndex(newIdx !== -1 ? newIdx : 0);
+        } else {
+          const newIdx = currentSelectedId ? updatedPlaces.findIndex((p) => p.id === currentSelectedId) : -1;
+          setPlaces(updatedPlaces);
+          setIndex(newIdx !== -1 ? newIdx : 0);
+        }
       }
     });
     return () => unsubscribe();
   }, []);
 
-  const activeIndex = index < places.length ? index : 0;
+  const activeIndex = index >= 0 && index < places.length ? index : 0;
   const currentPlace = places[activeIndex] || QUIET_SPOTS[0];
 
-  // 3. Focus-Aware User Location Watcher (Mitigates battery drain on background tabs)
+  // 3. Focus-Aware User Location Watcher (R3: 3-min cooldown & safe activeIndex management)
   useEffect(() => {
     if (!isFocused) return;
     let active = true;
@@ -407,9 +436,24 @@ export default function MapScreen() {
           if (!active) return;
           const { latitude, longitude } = loc.coords;
           setUserLocation({ latitude, longitude });
-          
+
           const injectScript = `if(window.updateUserLocation){window.updateUserLocation(${latitude},${longitude});};true;`;
           webViewRef.current?.injectJavaScript(injectScript);
+
+          // R3: 3-minute cooldown re-sorting & safe activeIndex preservation
+          const now = Date.now();
+          if (lastSortTimeRef.current === 0 || now - lastSortTimeRef.current >= SORT_COOLDOWN_MS) {
+            const currentPlaces = placesRef.current;
+            if (currentPlaces && currentPlaces.length > 0) {
+              const currentSelectedId = currentPlaces[indexRef.current]?.id;
+              const sorted = sortPlacesByDistance(currentPlaces, { latitude, longitude });
+              const newIdx = currentSelectedId ? sorted.findIndex((p) => p.id === currentSelectedId) : -1;
+
+              setPlaces(sorted);
+              setIndex(newIdx !== -1 ? newIdx : 0);
+              lastSortTimeRef.current = now;
+            }
+          }
         }
       );
 
