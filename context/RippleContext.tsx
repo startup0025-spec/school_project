@@ -150,8 +150,17 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
     // 3. 지오펜싱 트래킹 동작 상태 변경 감지
     const trackingSub = DeviceEventEmitter.addListener(
       'onTrackingStateUpdate',
-      (data: { isTracking?: boolean }) => {
-        setIsTracking(data?.isTracking ?? false); 
+      (data: { isTracking?: boolean; state?: any; waterType?: any }) => {
+        setIsTracking(data?.isTracking ?? false);
+        if (data?.state?.currentSpeedClass) {
+          const speed = data.state.currentSpeedClass;
+          if (speed === 'STATIONARY') setMovement('calm');
+          else if (speed === 'WALKING') setMovement('walking');
+          else setMovement('busy');
+        }
+        if (data?.waterType) {
+          setWaterSource(data.waterType);
+        }
       }
     );
 

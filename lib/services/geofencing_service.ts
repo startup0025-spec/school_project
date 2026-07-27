@@ -392,7 +392,11 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
   await AsyncStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state));
 
   // [Zero-Burden] Broadcast state update to foreground UI without polling
-  DeviceEventEmitter.emit('onTrackingStateUpdate', { isTracking: true, state });
+  DeviceEventEmitter.emit('onTrackingStateUpdate', { 
+    isTracking: true, 
+    state,
+    waterType: targetPlace.waterType 
+  });
 }
 
 // Register background task using TaskManager

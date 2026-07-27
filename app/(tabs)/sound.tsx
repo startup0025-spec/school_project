@@ -48,6 +48,8 @@ export default function SoundScreen() {
         console.warn('[SoundScreen] stopAmbientSound failed:', err)
       );
     }
+  }, [playing, waterSource]);
+
   const glitch = safetyLevel === 'danger';
   const info = WATER_SOURCE_LABELS[waterSource];
 
