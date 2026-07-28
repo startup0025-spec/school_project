@@ -16,7 +16,7 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as TaskManager from 'expo-task-manager';
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import { configureBackgroundAudioSession } from '@/lib/services/audio_engine_service';
 import {
   startAdaptiveTracking,
@@ -58,7 +58,10 @@ export default function RootLayout() {
     Alert.alert(
       '위치 권한 오류',
       '백그라운드 위치 권한이 해제되어 물소리를 재생할 수 없습니다. 설정에서 "항상 허용"으로 변경해주세요.',
-      [{ text: '확인' }]
+      [
+        { text: '취소', style: 'cancel' },
+        { text: '설정으로 이동', onPress: () => Linking.openSettings() }
+      ]
     );
   });
 
@@ -69,7 +72,6 @@ export default function RootLayout() {
       configureBackgroundAudioSession();
 
       // [Step 1] 적응형 지오펜싱 백그라운드 위치 추적 기동
-      // ※ MP3 파일 추후 추가 시 실가동 예정 — 현재 번들 폴백 파일(464B 플레이스홀더)로 폴백됨
       TaskManager.isTaskRegisteredAsync(LOCATION_TRACKING_TASK).then((isRunning: boolean) => {
         if (isRunning) {
           console.log('[Layout] Geofencing task already running. Skipping re-registration.');
@@ -84,8 +86,11 @@ export default function RootLayout() {
           ) {
             Alert.alert(
               '위치 권한 필요',
-              '물소리 자동 재생을 위해 설정에서 위치 권한을 "항상 허용"으로 변경해주세요.',
-              [{ text: '확인' }]
+              '물소리 자동 재생을 위해 앱 정보 -> 권한 -> 위치 설정에서 "항상 허용"으로 변경해주세요.',
+              [
+                { text: '닫기', style: 'cancel' },
+                { text: '설정으로 이동', onPress: () => Linking.openSettings() }
+              ]
             );
           }
         });

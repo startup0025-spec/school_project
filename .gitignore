@@ -38,5 +38,5 @@ yarn-error.*
 *.tsbuildinfo
 .vercel
 
-.env
+# .env
 .agents/
