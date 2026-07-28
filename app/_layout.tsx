@@ -23,6 +23,10 @@ import {
   LOCATION_TRACKING_TASK,
 } from '@/lib/services/geofencing_service';
 import { useLocationPermissionMonitor } from '@/hooks/useLocationPermissionMonitor';
+import TrackPlayer from 'react-native-track-player';
+
+// Register headless playback service for background audio control
+TrackPlayer.registerPlaybackService(() => require('@/lib/services/track_player_service'));
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

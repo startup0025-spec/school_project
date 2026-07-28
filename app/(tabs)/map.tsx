@@ -622,6 +622,10 @@ export default function MapScreen() {
               <WebView
                 ref={webViewRef}
                 source={{ html: htmlContent, baseUrl: 'https://startup0025-spec.github.io' }}
+                originWhitelist={['*']}
+                mixedContentMode="always"
+                allowFileAccess={true}
+                allowUniversalAccessFromFileURLs={true}
                 onMessage={handleMessage}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
@@ -674,16 +678,18 @@ export default function MapScreen() {
               <Feather name="map" size={14} color={colors.primary} />
               <Text style={[styles.actionText, { color: colors.primary }]}>길찾기</Text>
             </Pressable>
-            <Pressable
-              onPress={() => {
-                Haptics.selectionAsync();
-                setIndex((i) => (i + 1) % (places.length || QUIET_SPOTS.length));
-              }}
-              style={styles.refreshButton}
-              testID="next-spot"
-            >
-              <Feather name="refresh-ccw" size={14} color={colors.primary} />
-            </Pressable>
+            {process.env.EXPO_PUBLIC_BUILD_MODE !== 'PRODUCTION' && (
+              <Pressable
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setIndex((i) => (i + 1) % (places.length || QUIET_SPOTS.length));
+                }}
+                style={styles.refreshButton}
+                testID="next-spot"
+              >
+                <Feather name="refresh-ccw" size={14} color={colors.primary} />
+              </Pressable>
+            )}
           </View>
         </View>
       </View>

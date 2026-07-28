@@ -9,12 +9,30 @@ import {
   registerActiveSoundController,
   BUNDLED_SOUNDS
 } from './audio_caching_service';
+import {
+  initMediaSession,
+  updateMediaPlaybackState,
+  registerLockscreenAudioHandlers,
+  RIPPLE_ARTWORK_DATA_URI,
+} from './media_session_service';
+
+export { initMediaSession, RIPPLE_ARTWORK_DATA_URI };
 
 let activeSounds: Audio.Sound[] = [];
 const activeFiles = new Set<string>();
 let activeIntervals: ReturnType<typeof setInterval>[] = [];
 
 let activePlaybackRequestId = 0;
+let lastWaterType: string | undefined = 'stream';
+
+registerLockscreenAudioHandlers(
+  async () => {
+    await playDynamicMix(lastWaterType);
+  },
+  async () => {
+    await stopAmbientSound();
+  }
+);
 
 // Register callbacks with caching service to handle eviction deadlock prevention
 registerActiveSoundController(
@@ -120,13 +138,18 @@ export async function configureBackgroundAudioSession(): Promise<void> {
       playThroughEarpieceAndroid: false,
     });
     console.log('[Audio Engine] Background session mode registered.');
+    initMediaSession();
   } catch (error) {
     console.error('[Audio Engine] Failed to configure background audio session:', error);
+    initMediaSession();
   }
 }
 
 export async function stopAmbientSound(): Promise<void> {
   try {
+    if (typeof globalThis !== 'undefined' && (globalThis as any).navigator?.mediaSession) {
+      (globalThis as any).navigator.mediaSession.playbackState = 'paused';
+    }
     // 1. Clear volume envelope & playback intervals
     for (const interval of activeIntervals) {
       clearInterval(interval);
@@ -167,6 +190,13 @@ export async function stopAmbientSound(): Promise<void> {
  * 3. Selects 1 random wind asset (wind_1..5) with real-time volume envelope fluctuation.
  */
 export async function playDynamicMix(waterType: string | undefined): Promise<void> {
+  if (waterType) {
+    lastWaterType = waterType;
+  }
+  initMediaSession();
+  if (typeof globalThis !== 'undefined' && (globalThis as any).navigator?.mediaSession) {
+    (globalThis as any).navigator.mediaSession.playbackState = 'playing';
+  }
   const currentRequestId = ++activePlaybackRequestId;
   console.log(`[Audio Engine] [Req #${currentRequestId}] Dynamic mix requested for waterType: ${waterType || 'default'}`);
 

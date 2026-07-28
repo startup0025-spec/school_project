@@ -61,7 +61,10 @@ export default function HomeScreen() {
 
       <Text style={[styles.copy, { color: colors.foreground }]}>{MOVEMENT_COPY[movement]}</Text>
 
-      <View style={styles.controlBlock}>
+      <View
+        style={styles.controlBlock}
+        pointerEvents={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? 'none' : 'auto'}
+      >
         <Text style={[styles.controlLabel, { color: colors.mutedForeground }]}>지금 나의 상태</Text>
         <SegmentedControl options={MOVEMENT_OPTIONS} value={movement} onChange={setMovement} />
       </View>

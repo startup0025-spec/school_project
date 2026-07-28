@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { DeviceEventEmitter, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -23,6 +23,20 @@ export default function SoundScreen() {
   const insets = useSafeAreaInsets();
   const { waterSource, setWaterSource, safetyLevel } = useRipple();
   const [playing, setPlaying] = useState(true);
+
+  // Lockscreen event listeners for 2-way state synchronization
+  useEffect(() => {
+    const playSub = DeviceEventEmitter.addListener('onMediaSessionPlay', () => {
+      setPlaying(true);
+    });
+    const pauseSub = DeviceEventEmitter.addListener('onMediaSessionPause', () => {
+      setPlaying(false);
+    });
+    return () => {
+      playSub.remove();
+      pauseSub.remove();
+    };
+  }, []);
 
   // 화면 마운트 시 자동 재생 (isInitialMount로 이중 기동 준수)
   const isInitialMount = useRef(true);
@@ -78,7 +92,10 @@ export default function SoundScreen() {
         <WaveformVisualizer mode={visualMode} color={glitch ? colors.destructive : colors.primary} />
       </View>
 
-      <View style={styles.chipRow}>
+      <View
+        style={styles.chipRow}
+        pointerEvents={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? 'none' : 'auto'}
+      >
         {SOURCE_OPTIONS.map((option) => {
           const active = option.value === waterSource;
           return (
