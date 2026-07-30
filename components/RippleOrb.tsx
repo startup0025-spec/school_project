@@ -32,14 +32,25 @@ const MODE_CONFIG: Record<OrbMode, OrbConfig> = {
 interface RippleOrbProps {
   mode: OrbMode;
   size?: number;
+  rawSpeedMps?: number;
 }
 
-export function RippleOrb({ mode, size = 240 }: RippleOrbProps) {
+export function RippleOrb({ mode, size = 240, rawSpeedMps }: RippleOrbProps) {
   const config = MODE_CONFIG[mode];
+  
+  // Continuous speed mapping
+  let activeIntensity = config.intensity;
+  if (rawSpeedMps !== undefined) {
+    // 0 m/s -> ~0.12 (calm)
+    // 1.5 m/s -> ~0.48 (walking)
+    // 4.0 m/s -> ~0.85 (busy)
+    activeIntensity = Math.max(0.05, Math.min(1.2, 0.12 + (rawSpeedMps / 4.0) * 0.73));
+  }
+
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    const duration = 2600 - config.intensity * 1600;
+    const duration = Math.max(400, 2600 - activeIntensity * 1600);
     progress.value = 0;
     progress.value = withRepeat(
       withTiming(1, { duration, easing: Easing.inOut(Easing.ease) }),
@@ -47,11 +58,11 @@ export function RippleOrb({ mode, size = 240 }: RippleOrbProps) {
       false,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+  }, [mode, activeIntensity]);
 
   const wobbleStyle = useAnimatedStyle(() => {
     const t = progress.value * Math.PI * 2;
-    const amp = config.intensity * 8 + (config.noisy ? Math.random() * 6 : 0);
+    const amp = activeIntensity * 8 + (config.noisy ? Math.random() * 6 : 0);
     return {
       transform: [
         { translateX: Math.sin(t * 2.1) * amp },
@@ -82,7 +93,7 @@ export function RippleOrb({ mode, size = 240 }: RippleOrbProps) {
               center={center}
               baseRadius={baseRadius}
               maxRadius={maxRadius}
-              intensity={config.intensity}
+              intensity={activeIntensity}
               color={config.colorTo}
               noisy={config.noisy}
             />

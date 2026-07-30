@@ -551,19 +551,22 @@ export default function MapScreen() {
     if (!currentPlace) return;
     const { name, latitude, longitude } = currentPlace;
     const urlEncodedName = encodeURIComponent(name);
-    const schemeUrl = `kakaomap://route?ep=${latitude},${longitude}&epName=${urlEncodedName}&by=FOOT`;
     const webFallbackUrl = `https://map.kakao.com/link/to/${urlEncodedName},${latitude},${longitude}`;
 
+    const schemeUrl = Platform.select({
+      ios: `maps:0,0?q=${urlEncodedName}&ll=${latitude},${longitude}`,
+      android: `geo:0,0?q=${latitude},${longitude}(${urlEncodedName})`,
+    });
+
     try {
-      const canOpen = await Linking.canOpenURL('kakaomap://');
-      if (canOpen) {
+      if (schemeUrl) {
         await Linking.openURL(schemeUrl);
       } else {
         await Linking.openURL(webFallbackUrl);
       }
     } catch (error) {
       console.warn('[MapScreen] Deep link error, falling back to web:', error);
-      await Linking.openURL(webFallbackUrl);
+      await Linking.openURL(webFallbackUrl).catch(() => {});
     }
   };
 
@@ -658,7 +661,7 @@ export default function MapScreen() {
     const walkTime = getWalkTime(currentPlace, userLocation);
     return (
       <>
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, paddingBottom: insets.bottom + 20 }]}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, paddingBottom: insets.bottom + 100 }]}>
           <Text style={[styles.hint, { color: colors.mutedForeground }]}>
             점심시간이 지나고 가장 한가한 시간에 딱 한 곳만 추천드려요.
           </Text>
@@ -678,18 +681,16 @@ export default function MapScreen() {
               <Feather name="map" size={14} color={colors.primary} />
               <Text style={[styles.actionText, { color: colors.primary }]}>길찾기</Text>
             </Pressable>
-            {process.env.EXPO_PUBLIC_BUILD_MODE !== 'PRODUCTION' && (
-              <Pressable
-                onPress={() => {
-                  Haptics.selectionAsync();
-                  setIndex((i) => (i + 1) % (places.length || QUIET_SPOTS.length));
-                }}
-                style={styles.refreshButton}
-                testID="next-spot"
-              >
-                <Feather name="refresh-ccw" size={14} color={colors.primary} />
-              </Pressable>
-            )}
+            <Pressable
+              onPress={() => {
+                Haptics.selectionAsync();
+                setIndex((i) => (i + 1) % (places.length || QUIET_SPOTS.length));
+              }}
+              style={styles.refreshButton}
+              testID="next-spot"
+            >
+              <Feather name="refresh-ccw" size={14} color={colors.primary} />
+            </Pressable>
           </View>
         </View>
       </View>

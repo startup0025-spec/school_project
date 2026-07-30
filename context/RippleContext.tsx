@@ -43,6 +43,7 @@ interface RippleContextValue {
   setIsTracking: (tracking: boolean) => void;
   orbMode: OrbMode;
   engineMessage: string | null;
+  rawSpeedMps: number;
 }
 
 const RippleContext = createContext<RippleContextValue | undefined>(undefined);
@@ -98,6 +99,7 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
   // 실시간 상태 관리 변수 추가
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [engineMessage, setEngineMessage] = useState<string | null>(null);
+  const [rawSpeedMps, setRawSpeedMps] = useState<number>(0);
 
   // 일기장 스토리지 초기 로드
   useEffect(() => {
@@ -150,8 +152,11 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
     // 3. 지오펜싱 트래킹 동작 상태 변경 감지
     const trackingSub = DeviceEventEmitter.addListener(
       'onTrackingStateUpdate',
-      (data: { isTracking?: boolean; state?: any; waterType?: any }) => {
+      (data: { isTracking?: boolean; state?: any; waterType?: any; rawSpeedMps?: number }) => {
         setIsTracking(data?.isTracking ?? false);
+        if (data?.rawSpeedMps !== undefined) {
+          setRawSpeedMps(data.rawSpeedMps);
+        }
         if (data?.state?.currentSpeedClass) {
           const speed = data.state.currentSpeedClass;
           if (speed === 'STATIONARY') setMovement('calm');
@@ -230,6 +235,7 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
       setIsTracking,
       orbMode,
       engineMessage,
+      rawSpeedMps,
     }),
     [
       movement,
@@ -242,6 +248,7 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
       isTracking,
       orbMode,
       engineMessage,
+      rawSpeedMps,
     ]
   );
 

@@ -45,7 +45,7 @@ export default function SoundScreen() {
   useEffect(() => {
     if (isInitialMount.current) {
       // 첫 렌더링: 자동 재생 시작 (playDynamicMix 연동)
-      playDynamicMix(waterSource).catch((err) =>
+      playDynamicMix(waterSource, safetyLevel === 'danger').catch((err) =>
         console.warn('[SoundScreen] Auto-play on mount failed:', err)
       );
       isInitialMount.current = false;
@@ -53,7 +53,7 @@ export default function SoundScreen() {
     }
     if (playing) {
       // 재생 켜지거나 워터소스 변경 시 오디오 엔진 연결
-      playDynamicMix(waterSource).catch((err) =>
+      playDynamicMix(waterSource, safetyLevel === 'danger').catch((err) =>
         console.warn('[SoundScreen] playDynamicMix failed:', err)
       );
     } else {
@@ -62,7 +62,7 @@ export default function SoundScreen() {
         console.warn('[SoundScreen] stopAmbientSound failed:', err)
       );
     }
-  }, [playing, waterSource]);
+  }, [playing, waterSource, safetyLevel]);
 
   const glitch = safetyLevel === 'danger';
   const info = WATER_SOURCE_LABELS[waterSource];

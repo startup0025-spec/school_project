@@ -13,7 +13,8 @@
     "build:android": "eas build --profile development --platform android",
     "build:ios": "eas build --profile development --platform ios",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -67,7 +68,6 @@
     "expo": "~54.0.35",
     "expo-av": "~16.0.8",
     "expo-build-properties": "^57.0.7",
-    "expo-dev-client": "~6.0.21",
     "expo-file-system": "~19.0.23",
     "expo-network": "~8.0.8",
     "expo-notifications": "~0.32.17",

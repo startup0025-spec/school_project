@@ -1,5 +1,71 @@
 {
-  "generatedAt": "2026-07-15T00:00:00Z",
-  "totalCount": 0,
-  "places": []
+  "generatedAt": "2026-07-29T10:00:00Z",
+  "totalCount": 5,
+  "places": [
+    {
+      "id": "p-jangjeon",
+      "name": "장전동역 아래 온천천",
+      "description": "물길을 따라 조용히 걸을 수 있는 산책로야. 벤치에 앉아 쉬기도 좋아.",
+      "latitude": 35.2382,
+      "longitude": 129.0882,
+      "waterType": "stream",
+      "geofenceRadius": 3000,
+      "district": "금정구",
+      "waterStationName": "장전동역",
+      "kmaNx": 98,
+      "kmaNy": 77
+    },
+    {
+      "id": "p-wondong",
+      "name": "원동교 수영강변",
+      "description": "넓은 수영강이 시원하게 펼쳐진 곳이야. 물소리를 들으며 머리를 식혀봐.",
+      "latitude": 35.1955,
+      "longitude": 129.1165,
+      "waterType": "river",
+      "geofenceRadius": 4000,
+      "district": "해운대구",
+      "waterStationName": "원동교",
+      "kmaNx": 99,
+      "kmaNy": 76
+    },
+    {
+      "id": "p-yeonan",
+      "name": "연안교 온천천",
+      "description": "도심 속이지만 물소리가 평온하게 들리는 한적한 장소야.",
+      "latitude": 35.1917,
+      "longitude": 129.0968,
+      "waterType": "stream",
+      "geofenceRadius": 3000,
+      "district": "연제구",
+      "waterStationName": "연안교",
+      "kmaNx": 98,
+      "kmaNy": 76
+    },
+    {
+      "id": "p-hwamyeong",
+      "name": "화명생태공원 대천천",
+      "description": "생태공원과 이어진 대천천이야. 자연의 소리에 집중하기 좋아.",
+      "latitude": 35.2345,
+      "longitude": 129.0118,
+      "waterType": "stream",
+      "geofenceRadius": 3000,
+      "district": "북구",
+      "waterStationName": "화명교",
+      "kmaNx": 96,
+      "kmaNy": 77
+    },
+    {
+      "id": "p-hakjang",
+      "name": "학장교 학장천",
+      "description": "동네 사람만 아는 조용한 학장천변 산책로야. 가만히 물의 흐름을 지켜봐.",
+      "latitude": 35.1328,
+      "longitude": 128.9897,
+      "waterType": "stream",
+      "geofenceRadius": 3000,
+      "district": "사상구",
+      "waterStationName": "학장교",
+      "kmaNx": 96,
+      "kmaNy": 74
+    }
+  ]
 }

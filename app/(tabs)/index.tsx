@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import { useRipple, type Movement, type OrbMode } from '@/context/RippleContext';
 import { RippleOrb } from '@/components/RippleOrb';
+import { RippleBar } from '@/components/RippleBar';
 import { SegmentedControl } from '@/components/SegmentedControl';
 
 const MOVEMENT_OPTIONS: { value: Movement; label: string }[] = [
@@ -23,7 +24,7 @@ const MOVEMENT_COPY: Record<Movement, string> = {
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { movement, setMovement, safetyLevel, currentMessage, orbMode } = useRipple();
+  const { movement, setMovement, safetyLevel, currentMessage, orbMode, rawSpeedMps } = useRipple();
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
@@ -56,18 +57,25 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.orbArea}>
-        <RippleOrb mode={orbMode} size={260} />
+        <RippleOrb 
+          mode={orbMode} 
+          size={260} 
+          rawSpeedMps={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? rawSpeedMps : undefined} 
+        />
       </View>
 
       <Text style={[styles.copy, { color: colors.foreground }]}>{MOVEMENT_COPY[movement]}</Text>
 
-      <View
-        style={styles.controlBlock}
-        pointerEvents={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? 'none' : 'auto'}
-      >
-        <Text style={[styles.controlLabel, { color: colors.mutedForeground }]}>지금 나의 상태</Text>
-        <SegmentedControl options={MOVEMENT_OPTIONS} value={movement} onChange={setMovement} />
-      </View>
+      {process.env.EXPO_PUBLIC_BUILD_MODE !== 'PRODUCTION' ? (
+        <View style={styles.controlBlock}>
+          <Text style={[styles.controlLabel, { color: colors.mutedForeground }]}>[DEMO] 강제 상태 주입 (GPS 오버라이드)</Text>
+          <SegmentedControl options={MOVEMENT_OPTIONS} value={movement} onChange={setMovement} />
+        </View>
+      ) : (
+        <View style={styles.controlBlock}>
+          <RippleBar mode={orbMode} rawSpeedMps={rawSpeedMps} />
+        </View>
+      )}
 
       {!bannerDismissed && (
         <View

@@ -277,6 +277,18 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
   if (state.activePlaceId === null) {
     // Lock Inactive: Query all places and identify closest
     const places = await getPlaces();
+    
+    /* [SWITCH OFF] 
+    try {
+      // Dynamically fetch TourAPI beaches and merge them. The geofence radius defaults to 1km.
+      const { fetchNearbyBeaches } = require('../../core_engine/src/network/tour_api');
+      const beaches = await fetchNearbyBeaches(latitude, longitude, 10000); // 10km radius search
+      places.push(...beaches);
+    } catch (e) {
+      console.warn('[BG Geofencing] Failed to fetch TourAPI beaches', e);
+    }
+    */
+
     if (places.length === 0) return;
 
     for (const place of places) {
@@ -321,7 +333,7 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
 
       if (safetyLevel === SafetyLevel.Danger) {
         // 위험: 다이나믹 믹스 + 긴급 푸시 + UI 위험 신호 발신
-        await playDynamicMix(targetPlace.waterType);
+        await playDynamicMix(targetPlace.waterType, true);
         await triggerDangerNotification(targetPlace);
         DeviceEventEmitter.emit('onSafetyDanger', {
           level: 'DANGER',
@@ -395,7 +407,8 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
   DeviceEventEmitter.emit('onTrackingStateUpdate', { 
     isTracking: true, 
     state,
-    waterType: targetPlace.waterType 
+    waterType: targetPlace.waterType,
+    rawSpeedMps: currentSpeed
   });
 }
 
