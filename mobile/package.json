@@ -13,10 +13,14 @@
     "build:android": "eas build --profile development --platform android",
     "build:ios": "eas build --profile development --platform ios",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@babel/plugin-transform-class-properties": "^7.29.7",
+    "@babel/plugin-transform-private-methods": "^7.29.7",
+    "@babel/plugin-transform-private-property-in-object": "^7.29.7",
     "@expo-google-fonts/inter": "^0.4.0",
     "@expo/cli": "54.0.23",
     "@expo/ngrok": "^4.1.0",
@@ -45,9 +49,10 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
+    "patch-package": "^8.0.1",
     "react-dom": "19.1.0",
     "react-native-gesture-handler": "~2.28.0",
-    "react-native-keyboard-controller": "1.18.5",
+    "react-native-keyboard-controller": "^1.18.5",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
@@ -60,15 +65,16 @@
   "dependencies": {
     "axios": "^1.18.1",
     "axios-cache-interceptor": "^1.12.0",
+    "expo": "~54.0.35",
     "expo-av": "~16.0.8",
-    "expo-dev-client": "~6.0.21",
+    "expo-build-properties": "^57.0.7",
     "expo-file-system": "~19.0.23",
     "expo-network": "~8.0.8",
     "expo-notifications": "~0.32.17",
     "expo-task-manager": "~14.0.9",
-    "react-native-webview": "^14.0.1",
-    "expo": "~54.0.35",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "react-native-track-player": "^4.1.2",
+    "react-native-webview": "^14.0.1"
   }
 }

@@ -45,44 +45,7 @@ export interface QuietSpot extends Place {
   walk: string;
 }
 
-export const QUIET_SPOTS: QuietSpot[] = [
-  {
-    id: 's1',
-    name: '(네트워크 오류) 조용한 강가',
-    description: '인터넷 연결 오류로 실제 장소 이름을 불러오지 못했습니다. 오프라인 지도를 표시합니다.',
-    walk: '도보 12분',
-    latitude: 35.2031, // 세월교 (수영강)
-    longitude: 129.1198,
-    waterType: 'river',
-    geofenceRadius: 4000,
-    district: '해운대구',
-    waterStationName: '세월교'
-  },
-  {
-    id: 's2',
-    name: '(네트워크 오류) 한적한 하천',
-    description: '인터넷 연결 오류로 실제 장소 이름을 불러오지 못했습니다. 오프라인 지도를 표시합니다.',
-    walk: '도보 18분',
-    latitude: 35.1978, // 세병교 (온천천)
-    longitude: 129.0837,
-    waterType: 'river',
-    geofenceRadius: 3000,
-    district: '연제구',
-    waterStationName: '세병교'
-  },
-  {
-    id: 's3',
-    name: '(네트워크 오류) 시냇가 벤치',
-    description: '인터넷 연결 오류로 실제 장소 이름을 불러오지 못했습니다. 오프라인 지도를 표시합니다.',
-    walk: '도보 9분',
-    latitude: 35.2318, // 부곡교 (온천천/장전천 인근)
-    longitude: 129.0843,
-    waterType: 'stream',
-    geofenceRadius: 3000,
-    district: '금정구',
-    waterStationName: '부곡교'
-  },
-];
+export const QUIET_SPOTS: QuietSpot[] = [];
 
 export const WATER_SOURCE_LABELS: Record<WaterSource, { label: string; description: string }> = {
   stream: {

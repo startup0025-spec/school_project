@@ -9,12 +9,30 @@ import {
   registerActiveSoundController,
   BUNDLED_SOUNDS
 } from './audio_caching_service';
+import {
+  initMediaSession,
+  updateMediaPlaybackState,
+  registerLockscreenAudioHandlers,
+  RIPPLE_ARTWORK_DATA_URI,
+} from './media_session_service';
+
+export { initMediaSession, RIPPLE_ARTWORK_DATA_URI };
 
 let activeSounds: Audio.Sound[] = [];
 const activeFiles = new Set<string>();
 let activeIntervals: ReturnType<typeof setInterval>[] = [];
 
 let activePlaybackRequestId = 0;
+let lastWaterType: string | undefined = 'stream';
+
+registerLockscreenAudioHandlers(
+  async () => {
+    await playDynamicMix(lastWaterType);
+  },
+  async () => {
+    await stopAmbientSound();
+  }
+);
 
 // Register callbacks with caching service to handle eviction deadlock prevention
 registerActiveSoundController(
@@ -120,13 +138,18 @@ export async function configureBackgroundAudioSession(): Promise<void> {
       playThroughEarpieceAndroid: false,
     });
     console.log('[Audio Engine] Background session mode registered.');
+    initMediaSession();
   } catch (error) {
     console.error('[Audio Engine] Failed to configure background audio session:', error);
+    initMediaSession();
   }
 }
 
 export async function stopAmbientSound(): Promise<void> {
   try {
+    if (typeof globalThis !== 'undefined' && (globalThis as any).navigator?.mediaSession) {
+      (globalThis as any).navigator.mediaSession.playbackState = 'paused';
+    }
     // 1. Clear volume envelope & playback intervals
     for (const interval of activeIntervals) {
       clearInterval(interval);
@@ -166,22 +189,30 @@ export async function stopAmbientSound(): Promise<void> {
  * 2. Overlays all 3 instances with pitch/rate variation (0.95, 1.0, 1.05) and random position offset.
  * 3. Selects 1 random wind asset (wind_1..5) with real-time volume envelope fluctuation.
  */
-export async function playDynamicMix(waterType: string | undefined): Promise<void> {
+export async function playDynamicMix(waterType: string | undefined, isDanger: boolean = false): Promise<void> {
+  if (waterType) {
+    lastWaterType = waterType;
+  }
+  initMediaSession();
+  if (typeof globalThis !== 'undefined' && (globalThis as any).navigator?.mediaSession) {
+    (globalThis as any).navigator.mediaSession.playbackState = 'playing';
+  }
   const currentRequestId = ++activePlaybackRequestId;
-  console.log(`[Audio Engine] [Req #${currentRequestId}] Dynamic mix requested for waterType: ${waterType || 'default'}`);
+  console.log(`[Audio Engine] [Req #${currentRequestId}] Dynamic mix requested for waterType: ${waterType || 'default'}, isDanger: ${isDanger}`);
 
   try {
     cancelActiveDownloads();
     await stopAmbientSound();
 
-    // 1. Select 3 random distinct ambient sound assets out of 5
+    // 1. Select random distinct ambient sound assets out of 5
     const typeStr = waterType === 'sea' ? 'sea' : 'river';
     const pool = [1, 2, 3, 4, 5];
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    const selectedAmbientIndices = pool.slice(0, 3);
+    const trackCount = isDanger ? 5 : 3;
+    const selectedAmbientIndices = pool.slice(0, trackCount);
     const ambientFiles = selectedAmbientIndices.map((idx) => `${typeStr}_${idx}.mp3`);
     const fallbackAmbientKey = typeStr === 'sea' ? 'ambient_sea.mp3' : 'ambient_river.mp3';
     const defaultFallbackAmbient = BUNDLED_SOUNDS[fallbackAmbientKey];
@@ -191,8 +222,8 @@ export async function playDynamicMix(waterType: string | undefined): Promise<voi
     const windFile = `wind_${randomWindIdx}.mp3`;
     const defaultFallbackWind = BUNDLED_SOUNDS['white_noise_wind.mp3'];
 
-    // 3. Load all 3 ambient sounds concurrently
-    const baseRates = [0.95, 1.0, 1.05];
+    // 3. Load all ambient sounds concurrently
+    const baseRates = isDanger ? [1.2, 1.3, 1.4, 1.5, 1.6] : [0.95, 1.0, 1.05];
     const ambientPromises = ambientFiles.map(async (file, index) => {
       const fallbackAsset = BUNDLED_SOUNDS[file] || defaultFallbackAmbient;
       const source = await resolveAudioSource(file);
@@ -253,22 +284,23 @@ export async function playDynamicMix(waterType: string | undefined): Promise<voi
       activeSounds.push(windSound);
 
       // Volume envelope interval (fluctuates volume every 500-1000ms simulating wind gusts)
-      const windInterval = setInterval(async () => {
-        if (currentRequestId !== activePlaybackRequestId) {
-          clearInterval(windInterval);
-          return;
-        }
-        try {
-          if (windSound) {
-            const gustVol = 0.3 + Math.random() * 0.5;
-            await windSound.setVolumeAsync(gustVol);
+      if (currentRequestId === activePlaybackRequestId) {
+        const windInterval = setInterval(async () => {
+          if (currentRequestId !== activePlaybackRequestId) {
+            clearInterval(windInterval);
+            return;
           }
-        } catch {
-          // ignore error if sound was unloaded
-        }
-      }, 500 + Math.floor(Math.random() * 500));
-
-      activeIntervals.push(windInterval);
+          try {
+            if (windSound) {
+              const gustVol = isDanger ? (0.8 + Math.random() * 0.2) : (0.3 + Math.random() * 0.5);
+              await windSound.setVolumeAsync(gustVol);
+            }
+          } catch {
+            // ignore error if sound was unloaded
+          }
+        }, isDanger ? (200 + Math.floor(Math.random() * 200)) : (500 + Math.floor(Math.random() * 500)));
+        activeIntervals.push(windInterval);
+      }
     }
 
     console.log(`[Audio Engine] [Req #${currentRequestId}] Organic dynamic mix active with ambient (${ambientFiles.join(', ')}) + wind (${windFile}).`);

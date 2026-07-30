@@ -551,19 +551,22 @@ export default function MapScreen() {
     if (!currentPlace) return;
     const { name, latitude, longitude } = currentPlace;
     const urlEncodedName = encodeURIComponent(name);
-    const schemeUrl = `kakaomap://route?ep=${latitude},${longitude}&epName=${urlEncodedName}&by=FOOT`;
     const webFallbackUrl = `https://map.kakao.com/link/to/${urlEncodedName},${latitude},${longitude}`;
 
+    const schemeUrl = Platform.select({
+      ios: `maps:0,0?q=${urlEncodedName}&ll=${latitude},${longitude}`,
+      android: `geo:0,0?q=${latitude},${longitude}(${urlEncodedName})`,
+    });
+
     try {
-      const canOpen = await Linking.canOpenURL('kakaomap://');
-      if (canOpen) {
+      if (schemeUrl) {
         await Linking.openURL(schemeUrl);
       } else {
         await Linking.openURL(webFallbackUrl);
       }
     } catch (error) {
       console.warn('[MapScreen] Deep link error, falling back to web:', error);
-      await Linking.openURL(webFallbackUrl);
+      await Linking.openURL(webFallbackUrl).catch(() => {});
     }
   };
 
@@ -580,6 +583,9 @@ export default function MapScreen() {
   };
 
   const apiKey = process.env.EXPO_PUBLIC_KAKAO_MAP_API_KEY || 'MOCK_KEY';
+  if (apiKey === 'MOCK_KEY') {
+    console.warn('[MapScreen] EXPO_PUBLIC_KAKAO_MAP_API_KEY is missing. Using MOCK_KEY which will cause a 401 error.');
+  }
   const htmlContent = KAKAO_MAP_HTML.replace('YOUR_JS_API_KEY', apiKey);
 
   if (isSdkFailed) {
@@ -619,6 +625,10 @@ export default function MapScreen() {
               <WebView
                 ref={webViewRef}
                 source={{ html: htmlContent, baseUrl: 'https://startup0025-spec.github.io' }}
+                originWhitelist={['*']}
+                mixedContentMode="always"
+                allowFileAccess={true}
+                allowUniversalAccessFromFileURLs={true}
                 onMessage={handleMessage}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
@@ -651,7 +661,7 @@ export default function MapScreen() {
     const walkTime = getWalkTime(currentPlace, userLocation);
     return (
       <>
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, paddingBottom: insets.bottom + 20 }]}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, paddingBottom: insets.bottom + 100 }]}>
           <Text style={[styles.hint, { color: colors.mutedForeground }]}>
             점심시간이 지나고 가장 한가한 시간에 딱 한 곳만 추천드려요.
           </Text>

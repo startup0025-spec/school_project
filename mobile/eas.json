@@ -8,8 +8,28 @@
       "developmentClient": true,
       "distribution": "internal"
     },
-    "preview": {
+    "preview-demo": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_KAKAO_MAP_API_KEY": "24af09ad3bb319a067ce7cfc5e83fc2d",
+        "EXPO_PUBLIC_KMA_SERVICE_KEY": "0ccf1bb01212098d2fb3580fc9ad1cb5f6962d33efe1fdcc9591e4bbc5a28a3f",
+        "EXPO_PUBLIC_BUSAN_SERVICE_KEY": "0ccf1bb01212098d2fb3580fc9ad1cb5f6962d33efe1fdcc9591e4bbc5a28a3f"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
+      }
+    },
+    "preview-prod": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_KAKAO_MAP_API_KEY": "24af09ad3bb319a067ce7cfc5e83fc2d",
+        "EXPO_PUBLIC_KMA_SERVICE_KEY": "0ccf1bb01212098d2fb3580fc9ad1cb5f6962d33efe1fdcc9591e4bbc5a28a3f",
+        "EXPO_PUBLIC_BUSAN_SERVICE_KEY": "0ccf1bb01212098d2fb3580fc9ad1cb5f6962d33efe1fdcc9591e4bbc5a28a3f",
+        "EXPO_PUBLIC_BUILD_MODE": "PRODUCTION"
+      },
       "android": {
         "buildType": "apk"
       },

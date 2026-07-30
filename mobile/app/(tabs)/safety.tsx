@@ -31,7 +31,10 @@ export default function SafetyScreen() {
         {danger ? '이 구역은 지금 조심해야 해요' : '지금 이 구역은 평온해요'}
       </Text>
 
-      <View style={styles.controlBlock}>
+      <View
+        style={styles.controlBlock}
+        pointerEvents={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? 'none' : 'auto'}
+      >
         <Text style={[styles.controlLabel, { color: colors.mutedForeground }]}>수위·경보 시뮬레이션</Text>
         <SegmentedControl options={SAFETY_OPTIONS} value={safetyLevel} onChange={setSafetyLevel} />
       </View>

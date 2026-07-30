@@ -277,6 +277,18 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
   if (state.activePlaceId === null) {
     // Lock Inactive: Query all places and identify closest
     const places = await getPlaces();
+    
+    /* [SWITCH OFF] 
+    try {
+      // Dynamically fetch TourAPI beaches and merge them. The geofence radius defaults to 1km.
+      const { fetchNearbyBeaches } = require('../../core_engine/src/network/tour_api');
+      const beaches = await fetchNearbyBeaches(latitude, longitude, 10000); // 10km radius search
+      places.push(...beaches);
+    } catch (e) {
+      console.warn('[BG Geofencing] Failed to fetch TourAPI beaches', e);
+    }
+    */
+
     if (places.length === 0) return;
 
     for (const place of places) {
@@ -321,7 +333,7 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
 
       if (safetyLevel === SafetyLevel.Danger) {
         // 위험: 다이나믹 믹스 + 긴급 푸시 + UI 위험 신호 발신
-        await playDynamicMix(targetPlace.waterType);
+        await playDynamicMix(targetPlace.waterType, true);
         await triggerDangerNotification(targetPlace);
         DeviceEventEmitter.emit('onSafetyDanger', {
           level: 'DANGER',
@@ -392,7 +404,12 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
   await AsyncStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state));
 
   // [Zero-Burden] Broadcast state update to foreground UI without polling
-  DeviceEventEmitter.emit('onTrackingStateUpdate', state);
+  DeviceEventEmitter.emit('onTrackingStateUpdate', { 
+    isTracking: true, 
+    state,
+    waterType: targetPlace.waterType,
+    rawSpeedMps: currentSpeed
+  });
 }
 
 // Register background task using TaskManager
@@ -448,6 +465,7 @@ export async function startAdaptiveTracking(): Promise<void> {
     showsBackgroundLocationIndicator: false,
   });
 
+  DeviceEventEmitter.emit('onTrackingStateUpdate', { isTracking: true, state: INITIAL_STATE });
   console.log('[Geofencing Service] Geofencing task registered and initialized successfully.');
 }
 
@@ -457,10 +475,18 @@ export async function startAdaptiveTracking(): Promise<void> {
 export async function stopAdaptiveTracking(): Promise<void> {
   const isRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TRACKING_TASK);
   if (isRegistered) {
-    await Location.stopLocationUpdatesAsync(LOCATION_TRACKING_TASK);
-    await stopAmbientSound();
-    await AsyncStorage.removeItem(STORAGE_STATE_KEY);
-    await AsyncStorage.removeItem(STORAGE_PERMISSION_ERR_KEY);
-    console.log('[Geofencing Service] Tracking terminated; session state reset.');
+    taskQueue = taskQueue.then(async () => {
+      try {
+        await Location.stopLocationUpdatesAsync(LOCATION_TRACKING_TASK);
+        await stopAmbientSound();
+        await AsyncStorage.removeItem(STORAGE_STATE_KEY);
+        await AsyncStorage.removeItem(STORAGE_PERMISSION_ERR_KEY);
+        DeviceEventEmitter.emit('onTrackingStateUpdate', { isTracking: false });
+        console.log('[Geofencing Service] Tracking terminated; session state reset.');
+      } catch (err) {
+        console.error('[Geofencing Service] Error stopping tracking:', err);
+      }
+    });
+    await taskQueue;
   }
 }

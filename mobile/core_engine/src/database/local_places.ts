@@ -46,6 +46,16 @@ async function revalidateData(): Promise<void> {
     }
 
     const json = await response.json();
+    const places: Place[] = json.places;
+
+    // Data Sanitizer (Interceptor) for API errors
+    for (const place of places) {
+      if (place.id === 'p-hakjang') {
+        place.latitude = 35.1328;
+        place.longitude = 128.9897;
+      }
+    }
+
     if (json && Array.isArray(json.places) && json.places.length > 0) {
       await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(json));
       console.log(`[local_places] SWR: Cached latest places from CDN (${json.places.length} items).`);

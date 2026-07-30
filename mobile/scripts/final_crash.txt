@@ -1,0 +1,398 @@
+--------- beginning of main
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: No service published for: persistent_data_block
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: android.os.ServiceManager$ServiceNotFoundException: No service published for: persistent_data_block
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.os.ServiceManager.getServiceOrThrow(ServiceManager.java:175)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.app.SystemServiceRegistry$93.createService(SystemServiceRegistry.java:1347)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.app.SystemServiceRegistry$93.createService(SystemServiceRegistry.java:1344)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.app.SystemServiceRegistry$StaticServiceFetcher.getService(SystemServiceRegistry.java:2909)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.app.SystemServiceRegistry.getSystemService(SystemServiceRegistry.java:2356)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.app.ContextImpl.getSystemService(ContextImpl.java:2560)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.content.Context.getSystemService(Context.java:4944)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.server.pm.PackageInstallerSession.markAsSealed(PackageInstallerSession.java:2739)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.server.pm.PackageInstallerSession.commit(PackageInstallerSession.java:2476)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.content.pm.PackageInstaller$Session.commit(PackageInstaller.java:2300)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.server.pm.PackageManagerShellCommand.doCommitSession(PackageManagerShellCommand.java:4461)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.server.pm.PackageManagerShellCommand.doRunInstall(PackageManagerShellCommand.java:1659)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.server.pm.PackageManagerShellCommand.runInstall(PackageManagerShellCommand.java:1580)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:248)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.os.ShellCommand.exec(ShellCommand.java:40)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:7045)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.os.Binder.shellCommand(Binder.java:1054)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.os.Binder.onTransact(Binder.java:914)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4744)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:7029)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.os.Binder.execTransactInternal(Binder.java:1328)
+07-30 01:27:02.422   679  1960 E SystemServiceRegistry: 	at android.os.Binder.execTransact(Binder.java:1282)
+--------- beginning of system
+07-30 01:27:02.423   679  1960 E SystemServiceRegistry: Manager wrapper not available: persistent_data_block
+07-30 01:27:04.270   679   840 E WifiDataStall: Ignore this poll. newStats: null txLinkSpeedMbps: 1 rxLinkSpeedMbps: 2 rssi: -50 connectionCapabilities: com.android.server.wifi.WifiNative$ConnectionCapabilities@acc1a6b
+07-30 01:27:06.206   679  5730 E AppOps  : package pm not found, can't check for attributionTag null
+07-30 01:27:06.206   679  5730 E AppOps  : Bad call made by uid 1000. Package "pm" does not belong to uid 1000.
+07-30 01:27:06.207   679  5730 E AppOps  : Cannot noteOperation: non-application UID 1000
+07-30 01:27:06.349   679   851 E AppOps  : attributionTag VCN not declared in manifest of android
+07-30 01:27:06.878   679  1030 E RoleControllerServiceImpl: Default/fallback role holder package doesn't qualify for the role, package: com.google.android.gms.supervision, role: android.app.role.SYSTEM_SUPERVISION, user: 0
+07-30 01:27:06.883   679  1030 E RoleControllerServiceImpl: Default/fallback role holder package doesn't qualify for the role, package: com.google.android.gms, role: android.app.role.SYSTEM_CALL_STREAMING, user: 0
+07-30 01:27:06.909   679  1030 E RoleControllerServiceImpl: Default/fallback role holder package doesn't qualify for the role, package: com.google.android.gms, role: android.app.role.SYSTEM_DEPENDENCY_INSTALLER, user: 0
+07-30 01:27:06.949   679  1030 E RoleControllerServiceImpl: Default/fallback role holder package doesn't qualify for the role, package: com.google.android.gms, role: android.app.role.WALLET, user: 0
+07-30 01:27:07.106  5743  5743 E FeatureFlagsImplExport: android.os.flagging.AconfigStorageReadException: ERROR_PACKAGE_NOT_FOUND: package android.xr cannot be found on the device
+07-30 01:27:07.212  5740  5740 E FeatureFlagsImplExport: android.os.flagging.AconfigStorageReadException: ERROR_PACKAGE_NOT_FOUND: package android.xr cannot be found on the device
+07-30 01:27:07.276   679   840 E WifiDataStall: Ignore this poll. newStats: null txLinkSpeedMbps: 1 rxLinkSpeedMbps: 2 rssi: -50 connectionCapabilities: com.android.server.wifi.WifiNative$ConnectionCapabilities@acc1a6b
+07-30 01:27:07.369   679  1610 E AppOps  : attributionTag VCN not declared in manifest of android
+07-30 01:27:08.411  1080  1249 E SatelliteController: isSatelliteEnabled: mIsSatelliteEnabled=null
+07-30 01:27:08.464  5738  5738 E FeatureFlagsImplExport: android.os.flagging.AconfigStorageReadException: ERROR_PACKAGE_NOT_FOUND: package android.xr cannot be found on the device
+07-30 01:27:08.509   679   793 E EventHub: Could not open directory /sys/devices/virtual/power_supply: No such file or directory
+07-30 01:27:08.509   679   793 E EventHub: Could not open directory /sys/devices/power_supply: No such file or directory
+07-30 01:27:08.509   679   793 E EventHub: Could not open directory /sys/power_supply: No such file or directory
+07-30 01:27:08.509   679   793 E EventHub: Could not open directory /sys/devices/virtual/leds: No such file or directory
+07-30 01:27:08.509   679   793 E EventHub: Could not open directory /sys/devices/leds: No such file or directory
+07-30 01:27:08.509   679   793 E EventHub: Could not open directory /sys/leds: No such file or directory
+07-30 01:27:08.632   679   976 E TransitionChain: Can't collect into a chain with no transition
+07-30 01:27:08.975   679   915 E TransitionChain: Mismatch between current collecting (TransitionRecord{91aca14 id=14 type=OPEN flags=0x0 parallelCollectType=NONE recentsDisplayId=-1 c=[
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{97252bd container=WallpaperWindowToken{1d9e144 showWhenLocked=true} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{61100b2 container=DefaultTaskDisplayArea@55552149 flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{f1fb803 container=Task{41b6969 #40 type=standard A=10232:com.anyway.thesea} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{fe47380 container=Display{#0 state=ON size=1080x2400 ROTATION_0} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{4765db9 container=Task{7243077 #1 type=home} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{d0a75fe container=AppZoomOut:2:14@163145689 flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{ddbd15f container=ActivityRecord{164050346 u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t2} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{edd47ac container=WindowedMagnification:0:31@183659557 flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{b161c75 container=Task{e3b0276 #2 type=home I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{c93f40a container=ActivityRecord{267165680 u0 com.anyway.thesea/.MainActivity t40} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain: ]
+07-30 01:27:08.975   679   915 E TransitionChain: }) and chain (TransitionRecord{91aca14 id=14 type=OPEN flags=0x0 parallelCollectType=NONE recentsDisplayId=-1 c=[
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{97252bd container=WallpaperWindowToken{1d9e144 showWhenLocked=true} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{61100b2 container=DefaultTaskDisplayArea@55552149 flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{f1fb803 container=Task{41b6969 #40 type=standard A=10232:com.anyway.thesea} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{fe47380 container=Display{#0 state=ON size=1080x2400 ROTATION_0} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{4765db9 container=Task{7243077 #1 type=home} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{d0a75fe container=AppZoomOut:2:14@163145689 flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{ddbd15f container=ActivityRecord{164050346 u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity t2} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{edd47ac container=WindowedMagnification:0:31@183659557 flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{b161c75 container=Task{e3b0276 #2 type=home I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain:    ChangeInfo{c93f40a container=ActivityRecord{267165680 u0 com.anyway.thesea/.MainActivity t40} flags=0x0}
+07-30 01:27:08.975   679   915 E TransitionChain: ]
+07-30 01:27:08.975   679   915 E TransitionChain: })
+07-30 01:27:09.333   679  1171 E TransitionChain: Can't collect into a chain with no transition
+07-30 01:27:09.939  1588  5757 E gle.android.gms: hiddenapi: Accessing hidden method Landroid/telephony/TelephonyManager;->isImsRegistered()Z (runtime_flags=0, domain=platform, api=max-target-p) from Lddzi; (domain=app, TargetSdkVersion=37) using reflection: denied
+07-30 01:27:10.165  5743  5856 E AVManager: Cannot install JSI bindings for AV module because JS context is not available
+07-30 01:27:10.279   679   840 E WifiDataStall: Ignore this poll. newStats: null txLinkSpeedMbps: 1 rxLinkSpeedMbps: 2 rssi: -50 connectionCapabilities: com.android.server.wifi.WifiNative$ConnectionCapabilities@acc1a6b
+07-30 01:27:10.388  1588  5757 E kdur    : *~*~*~ Previous channel {0} was garbage collected without being shut down! ~*~*~*
+07-30 01:27:10.388  1588  5757 E kdur    :     Make sure to call shutdown()/shutdownNow()
+07-30 01:27:10.388  1588  5757 E kdur    : java.lang.RuntimeException: ManagedChannel allocation site
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kduq.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):21)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdur.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):10)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdup.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):300)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdch.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):5)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdih.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):18)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at axbp.c(:com.google.android.gms@262532038@26.25.32 (260800-944114241):63)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at axbp.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):60)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at bflf.e(:com.google.android.gms@262532038@26.25.32 (260800-944114241):7)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at bfln.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):7)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.google.android.gms.backup.settings.notifications.Pommel_BackupNotificationsTask.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):17)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjw.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):8)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at beqw.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):26)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjv.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):5)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjl.b(:com.google.android.gms@262532038@26.25.32 (260800-944114241):40)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjj.onBind(:com.google.android.gms@262532038@26.25.32 (260800-944114241):67)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at belq.onBind(:com.google.android.gms@262532038@26.25.32 (260800-944114241):44)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.handleBindService(ActivityThread.java:5691)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.-$$Nest$mhandleBindService(ActivityThread.java:0)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2840)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Handler.dispatchMessageImpl(Handler.java:142)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.main(ActivityThread.java:9572)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at java.lang.reflect.Method.invoke(Native Method)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:842)
+07-30 01:27:10.388  1588  5757 E kdur    : *~*~*~ Previous channel {0} was garbage collected without being shut down! ~*~*~*
+07-30 01:27:10.388  1588  5757 E kdur    :     Make sure to call shutdown()/shutdownNow()
+07-30 01:27:10.388  1588  5757 E kdur    : java.lang.RuntimeException: ManagedChannel allocation site
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kduq.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):21)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdur.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):10)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdup.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):300)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdch.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):5)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdih.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):18)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at axbp.c(:com.google.android.gms@262532038@26.25.32 (260800-944114241):63)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at axbp.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):20)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at bflf.e(:com.google.android.gms@262532038@26.25.32 (260800-944114241):7)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at bfln.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):7)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.google.android.gms.backup.settings.notifications.Pommel_BackupNotificationsTask.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):17)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjw.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):8)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at beqw.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):26)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjv.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):5)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjl.b(:com.google.android.gms@262532038@26.25.32 (260800-944114241):40)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjj.onBind(:com.google.android.gms@262532038@26.25.32 (260800-944114241):67)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at belq.onBind(:com.google.android.gms@262532038@26.25.32 (260800-944114241):44)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.handleBindService(ActivityThread.java:5691)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.-$$Nest$mhandleBindService(ActivityThread.java:0)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2840)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Handler.dispatchMessageImpl(Handler.java:142)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.main(ActivityThread.java:9572)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at java.lang.reflect.Method.invoke(Native Method)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:842)
+07-30 01:27:10.388  1588  5757 E kdur    : *~*~*~ Previous channel {0} was garbage collected without being shut down! ~*~*~*
+07-30 01:27:10.388  1588  5757 E kdur    :     Make sure to call shutdown()/shutdownNow()
+07-30 01:27:10.388  1588  5757 E kdur    : java.lang.RuntimeException: ManagedChannel allocation site
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kduq.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):21)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdur.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):10)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdup.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):300)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdch.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):5)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at kdih.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):18)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at axbp.c(:com.google.android.gms@262532038@26.25.32 (260800-944114241):63)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at axbp.<init>(:com.google.android.gms@262532038@26.25.32 (260800-944114241):41)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at bflf.e(:com.google.android.gms@262532038@26.25.32 (260800-944114241):7)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at bfln.a(:com.google.android.gms@262532038@26.25.32 (260800-944114241):7)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.google.android.gms.backup.settings.notifications.Pommel_BackupNotificationsTask.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):17)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjw.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):8)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at beqw.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):26)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjv.onCreate(:com.google.android.gms@262532038@26.25.32 (260800-944114241):5)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjl.b(:com.google.android.gms@262532038@26.25.32 (260800-944114241):40)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at abjj.onBind(:com.google.android.gms@262532038@26.25.32 (260800-944114241):67)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at belq.onBind(:com.google.android.gms@262532038@26.25.32 (260800-944114241):44)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.handleBindService(ActivityThread.java:5691)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.-$$Nest$mhandleBindService(ActivityThread.java:0)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2840)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Handler.dispatchMessageImpl(Handler.java:142)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at android.app.ActivityThread.main(ActivityThread.java:9572)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at java.lang.reflect.Method.invoke(Native Method)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+07-30 01:27:10.388  1588  5757 E kdur    : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:842)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: [Error: Exception in HostObject::get for prop 'TrackPlayerModule': com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils$ParsingException: Unable to parse @ReactMethod annotations from native module: TrackPlayerModule. Details: TurboModule system assumes returnType == void iff the method is synchronous.
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils.getMethodDescriptorsFromModule(TurboModuleInteropUtils.kt:61)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.getMethodDescriptorsFromModule(TurboModuleManager.kt:403)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.access$getMethodDescriptorsFromModule(TurboModuleManager.kt:389)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager.getMethodDescriptorsFromModule(TurboModuleManager.kt:2)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.jni.NativeRunnable.run(Native Method)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at android.os.Handler.handleCallback(Handler.java:1082)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadHandler.dispatchMessage(MessageQueueThreadHandler.kt:21)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.startNewBackgroundThread$lambda$1(MessageQueueThreadImpl.kt:175)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.$r8$lambda$ldnZnqelhYFctGaUKkOKYj5rxo4(MessageQueueThreadImpl.kt:0)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:10.590  5743  5856 E ReactNativeJS: ]
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: [Error: Exception in HostObject::get for prop 'TrackPlayerModule': com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils$ParsingException: Unable to parse @ReactMethod annotations from native module: TrackPlayerModule. Details: TurboModule system assumes returnType == void iff the method is synchronous.
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils.getMethodDescriptorsFromModule(TurboModuleInteropUtils.kt:61)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.getMethodDescriptorsFromModule(TurboModuleManager.kt:403)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.access$getMethodDescriptorsFromModule(TurboModuleManager.kt:389)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager.getMethodDescriptorsFromModule(TurboModuleManager.kt:2)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.jni.NativeRunnable.run(Native Method)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at android.os.Handler.handleCallback(Handler.java:1082)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadHandler.dispatchMessage(MessageQueueThreadHandler.kt:21)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.startNewBackgroundThread$lambda$1(MessageQueueThreadImpl.kt:175)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.$r8$lambda$ldnZnqelhYFctGaUKkOKYj5rxo4(MessageQueueThreadImpl.kt:0)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:10.591  5743  5856 E ReactNativeJS: ]
+--------- beginning of crash
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: FATAL EXCEPTION: mqt_v_native
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: Process: com.anyway.thesea, PID: 5743
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: com.facebook.react.common.JavascriptException: Error: Exception in HostObject::get for prop 'TrackPlayerModule': com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils$ParsingException: Unable to parse @ReactMethod annotations from native module: TrackPlayerModule. Details: TurboModule system assumes returnType == void iff the method is synchronous.
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils.getMethodDescriptorsFromModule(TurboModuleInteropUtils.kt:61)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.getMethodDescriptorsFromModule(TurboModuleManager.kt:403)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.access$getMethodDescriptorsFromModule(TurboModuleManager.kt:389)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager.getMethodDescriptorsFromModule(TurboModuleManager.kt:2)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.jni.NativeRunnable.run(Native Method)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:1082)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadHandler.dispatchMessage(MessageQueueThreadHandler.kt:21)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.startNewBackgroundThread$lambda$1(MessageQueueThreadImpl.kt:175)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.$r8$lambda$ldnZnqelhYFctGaUKkOKYj5rxo4(MessageQueueThreadImpl.kt:0)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: , stack:
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: anonymous@1:1779142
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: loadModuleImplementation@1:63799
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: guardedLoadModule@1:63322
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: metroRequire@1:62832
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: anonymous@1:1772850
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: loadModuleImplementation@1:63799
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: guardedLoadModule@1:63322
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: metroRequire@1:62832
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: anonymous@1:1771182
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: loadModuleImplementation@1:63799
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: guardedLoadModule@1:63322
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: metroRequire@1:62832
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: anonymous@1:1769913
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: loadModuleImplementation@1:63799
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: guardedLoadModule@1:63322
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: metroRequire@1:62832
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: anonymous@1:1723906
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: loadModuleImplementation@1:63799
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: guardedLoadModule@1:63322
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: metroRequire@1:62832
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: anonymous@1:1794751
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: loadModuleImplementation@1:63799
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: guardedLoadModule@1:63278
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: metroRequire@1:62832
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: get@1:823832
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: metroContext@1:823618
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: loadRoute@1:1156591
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: getLayoutNode@1:1158746
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: _loop3@1:1156484
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: getDirectoryTree@1:1154261
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: getRoutes@1:1153246
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: getRoutes@1:1152234
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: useStore@1:1123784
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: ContextNavigator@1:1190794
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: renderWithHooks@1:251610
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: updateFunctionComponent@1:270384
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: beginWork@1:278211
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: performUnitOfWork@1:296851
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: workLoopSync@1:295859
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: renderRootSync@1:295691
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: performWorkOnRoot@1:293117
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: performWorkOnRootViaSchedulerTask@1:247074
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.modules.core.ExceptionsManagerModule.reportException(ExceptionsManagerModule.kt:52)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.jni.NativeRunnable.run(Native Method)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:1082)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadHandler.dispatchMessage(MessageQueueThreadHandler.kt:21)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.startNewBackgroundThread$lambda$1(MessageQueueThreadImpl.kt:175)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.$r8$lambda$ldnZnqelhYFctGaUKkOKYj5rxo4(MessageQueueThreadImpl.kt:0)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+07-30 01:27:10.595  5743  5857 E AndroidRuntime: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: [Error: Exception in HostObject::get for prop 'TrackPlayerModule': com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils$ParsingException: Unable to parse @ReactMethod annotations from native module: TrackPlayerModule. Details: TurboModule system assumes returnType == void iff the method is synchronous.
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils.getMethodDescriptorsFromModule(TurboModuleInteropUtils.kt:61)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.getMethodDescriptorsFromModule(TurboModuleManager.kt:403)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.access$getMethodDescriptorsFromModule(TurboModuleManager.kt:389)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager.getMethodDescriptorsFromModule(TurboModuleManager.kt:2)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.jni.NativeRunnable.run(Native Method)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Handler.handleCallback(Handler.java:1082)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadHandler.dispatchMessage(MessageQueueThreadHandler.kt:21)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.startNewBackgroundThread$lambda$1(MessageQueueThreadImpl.kt:175)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.$r8$lambda$ldnZnqelhYFctGaUKkOKYj5rxo4(MessageQueueThreadImpl.kt:0)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: ]
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: [Error: Exception in HostObject::get for prop 'TrackPlayerModule': com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils$ParsingException: Unable to parse @ReactMethod annotations from native module: TrackPlayerModule. Details: TurboModule system assumes returnType == void iff the method is synchronous.
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleInteropUtils.getMethodDescriptorsFromModule(TurboModuleInteropUtils.kt:61)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.getMethodDescriptorsFromModule(TurboModuleManager.kt:403)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager$Companion.access$getMethodDescriptorsFromModule(TurboModuleManager.kt:389)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.internal.turbomodule.core.TurboModuleManager.getMethodDescriptorsFromModule(TurboModuleManager.kt:2)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.jni.NativeRunnable.run(Native Method)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Handler.handleCallback(Handler.java:1082)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadHandler.dispatchMessage(MessageQueueThreadHandler.kt:21)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.startNewBackgroundThread$lambda$1(MessageQueueThreadImpl.kt:175)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.$r8$lambda$ldnZnqelhYFctGaUKkOKYj5rxo4(MessageQueueThreadImpl.kt:0)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:10.598  5743  5856 E ReactNativeJS: ]
+07-30 01:27:10.599  5743  5856 E ReactNativeJS: { [TypeError: Cannot read property 'ErrorBoundary' of undefined]
+07-30 01:27:10.599  5743  5856 E ReactNativeJS:   componentStack: '\n    at ContextNavigator (address at index.android.bundle:1:1190636)\n    at ExpoRoot (address at index.android.bundle:1:1190279)\n    at App (<anonymous>)\n    at RCTView (<anonymous>)\n    at View (address at index.android.bundle:1:492634)\n    at AppContainer (address at index.android.bundle:1:491963)',
+07-30 01:27:10.599  5743  5856 E ReactNativeJS:   isComponentError: true }
+07-30 01:27:10.625   679   792 E InputDispatcher: channel 'c1dfe0d com.anyway.thesea/com.anyway.thesea.MainActivity' ~ Channel is unrecoverably broken and will be disposed!
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: Unexpected invisibility after animation end: workspace.isVisible=true, workspace.alpha=1.0, hotseat.isVisible=false, hotseat.alpha=1.0
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: java.lang.Exception
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at com.android.quickstep.util.ScalingWorkspaceRevealAnim$4.run(go/retraceme a798b636504514d5f14cf6621c43761343057d4d4e3029f17e0063fb9c290362:123)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at com.android.launcher3.anim.AnimatorListeners$1.onAnimationEnd(go/retraceme a798b636504514d5f14cf6621c43761343057d4d4e3029f17e0063fb9c290362:2)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.Animator$AnimatorListener.onAnimationEnd(Animator.java:773)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.Animator$AnimatorCaller$$ExternalSyntheticLambda1.call(D8$$SyntheticClass:0)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.Animator.callOnList(Animator.java:731)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.Animator.notifyListeners(Animator.java:629)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.Animator.notifyEndListeners(Animator.java:654)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.Animator.completeEndAnimation(Animator.java:697)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.AnimatorSet.completeEndAnimation(AnimatorSet.java:1474)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.Animator.notifyEndListenersFromEndAnimation(Animator.java:686)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.AnimatorSet.endAnimation(AnimatorSet.java:1464)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.AnimatorSet.endAnimation(AnimatorSet.java:1447)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.AnimatorSet.endAnimationAndNotifyEndListenersImmediately(AnimatorSet.java:437)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.animation.AnimatorSet.cancel(AnimatorSet.java:425)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at com.android.quickstep.util.ScalingWorkspaceRevealAnim.cancelAnimations(go/retraceme a798b636504514d5f14cf6621c43761343057d4d4e3029f17e0063fb9c290362:21)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at com.android.launcher3.QuickstepTransitionManager.createWallpaperOpenAnimations(go/retraceme a798b636504514d5f14cf6621c43761343057d4d4e3029f17e0063fb9c290362:164)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at com.android.launcher3.QuickstepTransitionManager$WallpaperOpenLauncherAnimationRunner.onAnimationStart(go/retraceme a798b636504514d5f14cf6621c43761343057d4d4e3029f17e0063fb9c290362:135)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at com.android.launcher3.LauncherAnimationRunner$$ExternalSyntheticLambda2.run(go/retraceme a798b636504514d5f14cf6621c43761343057d4d4e3029f17e0063fb9c290362:71)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.os.Handler.handleCallback(Handler.java:1082)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.os.Looper.loopOnce(Looper.java:295)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.os.Looper.loop(Looper.java:398)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at android.app.ActivityThread.main(ActivityThread.java:9572)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at java.lang.reflect.Method.invoke(Native Method)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+07-30 01:27:10.765  1083  1083 E ScalingWorkspaceRevealAnim: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:842)
+07-30 01:27:11.156   679  1959 E WindowOrganizerController: Attempting to externally change a non-organized container: Task{41b6969 #40 type=standard A=10232:com.anyway.thesea}={handlePackageUpdate:false,} playercount=2 taskorg=android.window.ITaskOrganizer$Stub$Proxy@346059d
+07-30 01:27:11.181   679   920 E ConsumerBase: [ImageReader-864x1920f1m1-679-1] abandonLocked: ConsumerBase is abandoned!
+07-30 01:27:12.228   679  1529 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+07-30 01:27:12.768  1588  5757 E constellation: [rpc_manager] Sync: failed with status: kdgz{code=RESOURCE_EXHAUSTED, description=Resource has been exhausted (e.g. check quota)., cause=null}
+07-30 01:27:12.768  1588  5757 E constellation: Exception: 
+07-30 01:27:12.768  1588  5757 E constellation: kdha: RESOURCE_EXHAUSTED: Resource has been exhausted (e.g. check quota).
+07-30 01:27:12.768  1588  5757 E constellation: 	at blly.q(:com.google.android.gms@262532038@26.25.32 (260800-944114241):31)
+07-30 01:27:12.768  1588  5757 E constellation: 	at blly.f(:com.google.android.gms@262532038@26.25.32 (260800-944114241):90)
+07-30 01:27:12.768  1588  5757 E constellation: 	at bmfa.b(:com.google.android.gms@262532038@26.25.32 (260800-944114241):45)
+07-30 01:27:12.768  1588  5757 E constellation: 	at bmew.B(:com.google.android.gms@262532038@26.25.32 (260800-944114241):27)
+07-30 01:27:12.768  1588  5757 E constellation: 	at bmew.i(:com.google.android.gms@262532038@26.25.32 (260800-944114241):111)
+07-30 01:27:12.768  1588  5757 E constellation: 	at bmdl.n(:com.google.android.gms@262532038@26.25.32 (260800-944114241):32)
+07-30 01:27:12.768  1588  5757 E constellation: 	at com.google.android.gms.constellation.EventManager.g(:com.google.android.gms@262532038@26.25.32 (260800-944114241):343)
+07-30 01:27:12.768  1588  5757 E constellation: 	at com.google.android.gms.constellation.EventManager.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):384)
+07-30 01:27:12.768  1588  5757 E constellation: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):1)
+07-30 01:27:12.768  1588  5757 E constellation: 	at besh.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):88)
+07-30 01:27:12.768  1588  5757 E constellation: 	at ablj.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):58)
+07-30 01:27:12.768  1588  5757 E constellation: 	at abli.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):132)
+07-30 01:27:12.768  1588  5757 E constellation: 	at higr.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):23)
+07-30 01:27:12.768  1588  5757 E constellation: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1100)
+07-30 01:27:12.768  1588  5757 E constellation: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+07-30 01:27:12.768  1588  5757 E constellation: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:12.768  1588  5757 E constellation: [verification_manager] Verification failed: 
+07-30 01:27:12.768  1588  5757 E constellation: bmxq: sync
+07-30 01:27:12.768  1588  5757 E constellation: 	at bmew.z(:com.google.android.gms@262532038@26.25.32 (260800-944114241):49)
+07-30 01:27:12.768  1588  5757 E constellation: 	at bmew.i(:com.google.android.gms@262532038@26.25.32 (260800-944114241):441)
+07-30 01:27:12.768  1588  5757 E constellation: 	at bmdl.n(:com.google.android.gms@262532038@26.25.32 (260800-944114241):32)
+07-30 01:27:12.768  1588  5757 E constellation: 	at com.google.android.gms.constellation.EventManager.g(:com.google.android.gms@262532038@26.25.32 (260800-944114241):343)
+07-30 01:27:12.768  1588  5757 E constellation: 	at com.google.android.gms.constellation.EventManager.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):384)
+07-30 01:27:12.768  1588  5757 E constellation: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):1)
+07-30 01:27:12.768  1588  5757 E constellation: 	at besh.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):88)
+07-30 01:27:12.768  1588  5757 E constellation: 	at ablj.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):58)
+07-30 01:27:12.768  1588  5757 E constellation: 	at abli.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):132)
+07-30 01:27:12.768  1588  5757 E constellation: 	at higr.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):23)
+07-30 01:27:12.768  1588  5757 E constellation: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1100)
+07-30 01:27:12.768  1588  5757 E constellation: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+07-30 01:27:12.768  1588  5757 E constellation: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:12.769  1588  5757 E constellation: [event_manager] Failed to sync verifications: 
+07-30 01:27:12.769  1588  5757 E constellation: bmxq: sync
+07-30 01:27:12.769  1588  5757 E constellation: 	at bmew.z(:com.google.android.gms@262532038@26.25.32 (260800-944114241):49)
+07-30 01:27:12.769  1588  5757 E constellation: 	at bmew.i(:com.google.android.gms@262532038@26.25.32 (260800-944114241):441)
+07-30 01:27:12.769  1588  5757 E constellation: 	at bmdl.n(:com.google.android.gms@262532038@26.25.32 (260800-944114241):32)
+07-30 01:27:12.769  1588  5757 E constellation: 	at com.google.android.gms.constellation.EventManager.g(:com.google.android.gms@262532038@26.25.32 (260800-944114241):343)
+07-30 01:27:12.769  1588  5757 E constellation: 	at com.google.android.gms.constellation.EventManager.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):384)
+07-30 01:27:12.769  1588  5757 E constellation: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):1)
+07-30 01:27:12.769  1588  5757 E constellation: 	at besh.onHandleIntent(:com.google.android.gms@262532038@26.25.32 (260800-944114241):88)
+07-30 01:27:12.769  1588  5757 E constellation: 	at ablj.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):58)
+07-30 01:27:12.769  1588  5757 E constellation: 	at abli.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):132)
+07-30 01:27:12.769  1588  5757 E constellation: 	at higr.run(:com.google.android.gms@262532038@26.25.32 (260800-944114241):23)
+07-30 01:27:12.769  1588  5757 E constellation: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1100)
+07-30 01:27:12.769  1588  5757 E constellation: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+07-30 01:27:12.769  1588  5757 E constellation: 	at java.lang.Thread.run(Thread.java:1569)
+07-30 01:27:13.289   679   840 E WifiDataStall: Ignore this poll. newStats: null txLinkSpeedMbps: 1 rxLinkSpeedMbps: 2 rssi: -50 connectionCapabilities: com.android.server.wifi.WifiNative$ConnectionCapabilities@acc1a6b

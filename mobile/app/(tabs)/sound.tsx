@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { DeviceEventEmitter, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -24,6 +24,20 @@ export default function SoundScreen() {
   const { waterSource, setWaterSource, safetyLevel } = useRipple();
   const [playing, setPlaying] = useState(true);
 
+  // Lockscreen event listeners for 2-way state synchronization
+  useEffect(() => {
+    const playSub = DeviceEventEmitter.addListener('onMediaSessionPlay', () => {
+      setPlaying(true);
+    });
+    const pauseSub = DeviceEventEmitter.addListener('onMediaSessionPause', () => {
+      setPlaying(false);
+    });
+    return () => {
+      playSub.remove();
+      pauseSub.remove();
+    };
+  }, []);
+
   // 화면 마운트 시 자동 재생 (isInitialMount로 이중 기동 준수)
   const isInitialMount = useRef(true);
 
@@ -31,7 +45,7 @@ export default function SoundScreen() {
   useEffect(() => {
     if (isInitialMount.current) {
       // 첫 렌더링: 자동 재생 시작 (playDynamicMix 연동)
-      playDynamicMix(waterSource).catch((err) =>
+      playDynamicMix(waterSource, safetyLevel === 'danger').catch((err) =>
         console.warn('[SoundScreen] Auto-play on mount failed:', err)
       );
       isInitialMount.current = false;
@@ -39,7 +53,7 @@ export default function SoundScreen() {
     }
     if (playing) {
       // 재생 켜지거나 워터소스 변경 시 오디오 엔진 연결
-      playDynamicMix(waterSource).catch((err) =>
+      playDynamicMix(waterSource, safetyLevel === 'danger').catch((err) =>
         console.warn('[SoundScreen] playDynamicMix failed:', err)
       );
     } else {
@@ -48,7 +62,7 @@ export default function SoundScreen() {
         console.warn('[SoundScreen] stopAmbientSound failed:', err)
       );
     }
-  }, [playing, waterSource]);
+  }, [playing, waterSource, safetyLevel]);
 
   const glitch = safetyLevel === 'danger';
   const info = WATER_SOURCE_LABELS[waterSource];
@@ -78,7 +92,10 @@ export default function SoundScreen() {
         <WaveformVisualizer mode={visualMode} color={glitch ? colors.destructive : colors.primary} />
       </View>
 
-      <View style={styles.chipRow}>
+      <View
+        style={styles.chipRow}
+        pointerEvents={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? 'none' : 'auto'}
+      >
         {SOURCE_OPTIONS.map((option) => {
           const active = option.value === waterSource;
           return (
