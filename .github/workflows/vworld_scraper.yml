@@ -1,0 +1,55 @@
+name: 🌊 V-World Places Scraper
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 15 * * *'   # UTC 15:00 = KST 00:00 (Every midnight)
+  workflow_dispatch:          # Allow manual triggering
+
+jobs:
+  scrape-vworld:
+    name: Scrape V-World Water Places
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Permission for repository write/push
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 🌊 Run fetch_vworld.js scraper
+        env:
+          VWORLD_API_KEY: ${{ secrets.VWORLD_API_KEY || '58411BA3-A965-3751-B87F-9F551B97F37C' }}
+        run: node scripts/fetch_vworld.js
+
+      - name: 🚀 Commit & Push updated vworld_places.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 1. Commit to main branch
+          git add vworld_places.json mobile/assets/vworld_places.json mobile/assets/data/vworld_places.json
+          git diff --staged --quiet || git commit -m "chore(data): update vworld_places.json [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git push origin main 2>/dev/null || git push origin HEAD || echo "No changes or branch push skipped."
+
+          # 2. Deploy to gh-pages branch
+          git fetch origin gh-pages 2>/dev/null || true
+          mkdir -p /tmp/gh-pages-data
+          cp mobile/assets/data/vworld_places.json /tmp/gh-pages-data/
+          
+          git checkout gh-pages 2>/dev/null || git checkout --orphan gh-pages
+          mkdir -p data
+          cp /tmp/gh-pages-data/vworld_places.json data/
+          
+          git add data/vworld_places.json
+          git diff --staged --quiet || git commit -m "chore: deploy vworld_places.json to gh-pages [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git push origin gh-pages

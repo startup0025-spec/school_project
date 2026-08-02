@@ -67,9 +67,9 @@ export function getHaversineDistance(
  * Returns a new array sorted by Haversine distance from the given user coordinates.
  * The closest place is positioned at index 0.
  */
-export function sortPlacesByDistance<T extends { latitude: number; longitude: number }>(
+export function sortPlacesByDistance<T extends { latitude: number; longitude: number; waterCategory?: string }>(
   placesList: (T | null | undefined)[],
-  userCoords: { latitude: number; longitude: number }
+  userCoords: { latitude: number; longitude: number; altitude?: number }
 ): T[] {
   if (!placesList || placesList.length === 0) return [];
   const validPlaces = placesList.filter((p): p is T => p != null);
@@ -78,15 +78,32 @@ export function sortPlacesByDistance<T extends { latitude: number; longitude: nu
   }
 
   const decorated = validPlaces.map(place => {
-    const dist = getHaversineDistance(
+    const rawDist = getHaversineDistance(
       userCoords.latitude,
       userCoords.longitude,
       place.latitude,
       place.longitude
     );
+    let dist = Number.isNaN(rawDist) ? Number.MAX_VALUE : rawDist;
+
+    if (userCoords.altitude !== undefined && dist !== Number.MAX_VALUE) {
+      const alt = userCoords.altitude;
+      const cat = place.waterCategory || '';
+      
+      if (alt > 100) {
+        if (cat === '연안') {
+          dist *= 2.0; // 200% penalty for sea
+        }
+      } else if (alt < 50) {
+        if (cat === '지방하천') {
+          dist *= 1.5; // 150% penalty for mountain streams
+        }
+      }
+    }
+
     return {
       place,
-      dist: Number.isNaN(dist) ? Number.MAX_VALUE : dist
+      dist
     };
   });
 
@@ -94,3 +111,4 @@ export function sortPlacesByDistance<T extends { latitude: number; longitude: nu
 
   return decorated.map(item => item.place);
 }
+
