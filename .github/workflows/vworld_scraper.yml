@@ -40,7 +40,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # 1. Commit to main branch
-          git add vworld_places.json mobile/assets/vworld_places.json mobile/assets/data/vworld_places.json
+          git add vworld_places.json mobile/assets/data/vworld_places.json
           git diff --staged --quiet || git commit -m "chore(data): update vworld_places.json [$(date -u '+%Y-%m-%d %H:%M UTC')]"
           git push origin main 2>/dev/null || git push origin HEAD || echo "No changes or branch push skipped."
 
