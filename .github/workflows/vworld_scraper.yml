@@ -26,6 +26,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: 📦 Install dependencies
+        run: cd scripts && npm install
+
       - name: 🌊 Run fetch_vworld.js scraper
         env:
           VWORLD_API_KEY: ${{ secrets.VWORLD_API_KEY || '58411BA3-A965-3751-B87F-9F551B97F37C' }}
