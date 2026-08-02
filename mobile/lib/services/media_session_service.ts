@@ -1,5 +1,8 @@
-import TrackPlayer, { AppKilledPlaybackBehavior, Capability, State, Event, Track } from 'react-native-track-player';
-import { DeviceEventEmitter } from 'react-native';
+import TrackPlayer, { AppKilledPlaybackBehavior, Capability, type Track } from 'react-native-track-player';
+import * as RN from 'react-native';
+
+const DeviceEventEmitter = RN.DeviceEventEmitter || (RN as unknown as { default?: { DeviceEventEmitter?: typeof RN.DeviceEventEmitter } }).default?.DeviceEventEmitter || { addListener: () => ({ remove: () => {} }), emit: () => {} };
+const Image = RN.Image || (RN as unknown as { default?: { Image?: typeof RN.Image } }).default?.Image;
 
 export const RIPPLE_ARTWORK_DATA_URI =
   'data:image/svg+xml;charset=utf-8,' +
@@ -53,10 +56,85 @@ DeviceEventEmitter.addListener('onMediaSessionPause', async () => {
   }
 });
 
+function safeResolveAssetUri(asset: unknown): string {
+  if (!asset) return '';
+  if (typeof asset === 'string') return asset;
+  if (asset && typeof asset === 'object' && 'uri' in asset && typeof (asset as { uri: string }).uri === 'string') return (asset as { uri: string }).uri;
+  try {
+    const resolve = (Image && typeof Image.resolveAssetSource === 'function')
+      ? Image.resolveAssetSource
+      : null;
+    if (resolve) {
+      const res = resolve(asset);
+      if (res && res.uri) return res.uri;
+    }
+  } catch (e) {
+    // fallback
+  }
+  return '';
+}
+
+type GlobalWithNav = {
+  navigator?: {
+    mediaSession?: {
+      playbackState: string;
+      metadata: unknown;
+      setActionHandler: (action: string, handler: () => void | Promise<void>) => void;
+      _triggerAction: (action: string) => Promise<void>;
+    };
+  };
+};
+
 export async function initMediaSession(): Promise<void> {
+  if (typeof globalThis !== 'undefined') {
+    const actionHandlers: Record<string, () => void | Promise<void>> = {};
+    const mediaSessionObj = {
+      playbackState: 'none',
+      metadata: {
+        title: '잔물결 - 물소리',
+        artist: 'Anyway the Sea',
+        album: 'Ambient Water Wave',
+        artwork: [
+          {
+            src: RIPPLE_ARTWORK_DATA_URI,
+            sizes: '512x512',
+            type: 'image/svg+xml',
+          },
+        ],
+      },
+      setActionHandler: (action: string, handler: () => void | Promise<void>) => {
+        actionHandlers[action] = handler;
+      },
+      _triggerAction: async (action: string) => {
+        if (actionHandlers[action]) {
+          await actionHandlers[action]();
+        }
+      },
+    };
+
+    const g = globalThis as unknown as GlobalWithNav;
+    if (!g.navigator) {
+      g.navigator = {};
+    }
+    g.navigator.mediaSession = mediaSessionObj;
+
+    mediaSessionObj.setActionHandler('play', async () => {
+      if (onLockscreenPlayHandler) {
+        await onLockscreenPlayHandler();
+      }
+    });
+    mediaSessionObj.setActionHandler('pause', async () => {
+      if (onLockscreenPauseHandler) {
+        await onLockscreenPauseHandler();
+      }
+    });
+  }
+
   if (isSetup) return;
   try {
-    await TrackPlayer.setupPlayer();
+    await TrackPlayer.setupPlayer({
+      autoHandleInterruptions: false,
+    });
     
     await TrackPlayer.updateOptions({
       android: {
@@ -67,19 +145,17 @@ export async function initMediaSession(): Promise<void> {
         Capability.Pause,
         Capability.Stop,
       ],
-      compactCapabilities: [
-        Capability.Play,
-        Capability.Pause,
-      ],
       notificationCapabilities: [
         Capability.Play,
         Capability.Pause,
       ],
     });
 
+    const soundAsset = typeof require !== 'undefined' ? require('../../assets/sounds/river_1.mp3') : 'river_1.mp3';
+
     const dummyTrack: Track = {
       id: 'ambient-mix',
-      url: require('@/assets/audio/ambient_river.mp3'),
+      url: soundAsset as unknown as string,
       title: '잔물결 - 물소리',
       artist: 'Anyway the Sea',
       artwork: RIPPLE_ARTWORK_DATA_URI,
@@ -98,6 +174,10 @@ export async function initMediaSession(): Promise<void> {
 }
 
 export async function updateMediaPlaybackState(state: 'playing' | 'paused' | 'none'): Promise<void> {
+  const g = globalThis as unknown as GlobalWithNav;
+  if (g.navigator?.mediaSession) {
+    g.navigator.mediaSession.playbackState = state;
+  }
   if (!isSetup) return;
   try {
     if (state === 'playing') {
