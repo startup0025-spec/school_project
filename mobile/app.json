@@ -1,0 +1,90 @@
+{
+  "expo": {
+    "name": "Anyway_the_Sea",
+    "slug": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "mobile",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F3F7F5"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.anyway.thesea",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location",
+          "audio"
+        ],
+        "LSApplicationQueriesSchemes": [
+          "kakaomap"
+        ],
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
+    },
+    "android": {
+      "package": "com.anyway.thesea",
+      "queries": [
+        {
+          "package": "net.daum.android.map"
+        },
+        {
+          "intent": {
+            "action": "android.intent.action.VIEW",
+            "data": {
+              "scheme": "kakaomap"
+            }
+          }
+        }
+      ],
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.WAKE_LOCK",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      [
+        "expo-router"
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "사용자 주변의 조용한 하천과 바다를 찾고 물소리를 들려드리기 위해 위치 권한이 필요해요.",
+          "locationWhenInUsePermission": "사용자 주변의 조용한 하천과 바다를 찾고 물소리를 들려드리기 위해 위치 권한이 필요해요.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true,
+          "foregroundServiceType": "location"
+        }
+      ],
+      "expo-font",
+      "expo-web-browser",
+      "expo-build-properties"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "42f8a6fe-e0ad-4ff0-bfee-9eb92f6c666b"
+      }
+    },
+    "owner": "haetae05"
+  }
+}
