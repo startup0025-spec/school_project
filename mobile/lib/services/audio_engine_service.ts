@@ -207,48 +207,48 @@ export const WATER_AUDIO_PROFILES: Record<string, WaterAudioProfile> = {
   sea: {
     typeStr: 'sea',
     baseRates: [0.85, 0.95, 1.05],
-    ambientVolume: 0.85,
-    windVolumeRange: [0.35, 0.65],
+    ambientVolume: 0.28,
+    windVolumeRange: [0.07, 0.13],
     gustIntervalRange: [600, 1200],
     pitchCorrection: false,
   },
   national_river: {
     typeStr: 'river',
     baseRates: [0.90, 1.0, 1.08],
-    ambientVolume: 0.80,
-    windVolumeRange: [0.30, 0.55],
+    ambientVolume: 0.13,
+    windVolumeRange: [0.06, 0.11],
     gustIntervalRange: [500, 1000],
     pitchCorrection: false,
   },
   lake: {
     typeStr: 'river',
     baseRates: [0.72, 0.80, 0.88],
-    ambientVolume: 0.50,
-    windVolumeRange: [0.15, 0.35],
+    ambientVolume: 0.08,
+    windVolumeRange: [0.03, 0.07],
     gustIntervalRange: [800, 1600],
     pitchCorrection: false,
   },
   local_river: {
     typeStr: 'river',
     baseRates: [1.0, 1.08, 1.15],
-    ambientVolume: 0.70,
-    windVolumeRange: [0.25, 0.50],
+    ambientVolume: 0.12,
+    windVolumeRange: [0.05, 0.10],
     gustIntervalRange: [400, 800],
     pitchCorrection: false,
   },
   stream: {
     typeStr: 'river',
     baseRates: [1.18, 1.28, 1.38],
-    ambientVolume: 0.65,
-    windVolumeRange: [0.20, 0.40],
+    ambientVolume: 0.11,
+    windVolumeRange: [0.04, 0.08],
     gustIntervalRange: [300, 700],
     pitchCorrection: false,
   },
   river: {
     typeStr: 'river',
     baseRates: [1.0, 1.08, 1.15],
-    ambientVolume: 0.70,
-    windVolumeRange: [0.25, 0.50],
+    ambientVolume: 0.12,
+    windVolumeRange: [0.05, 0.10],
     gustIntervalRange: [400, 800],
     pitchCorrection: false,
   },
@@ -288,14 +288,8 @@ export async function playDynamicMix(waterType: string | undefined, isDanger: bo
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    const trackCount = isDanger ? 30 : 3;
+    const trackCount = 3;
     let selectedAmbientIndices = pool.slice(0, Math.min(trackCount, pool.length));
-    if (isDanger) {
-      selectedAmbientIndices = [];
-      for (let i = 0; i < 6; i++) {
-        selectedAmbientIndices.push(...pool); // 30 tracks (6 sets of 5)
-      }
-    }
     const ambientFiles = selectedAmbientIndices.map((idx) => `${typeStr}_${idx}.mp3`);
     const fallbackAmbientKey = typeStr === 'sea' ? 'ambient_sea.mp3' : 'ambient_river.mp3';
     const defaultFallbackAmbient = BUNDLED_SOUNDS[fallbackAmbientKey];
@@ -303,9 +297,7 @@ export async function playDynamicMix(waterType: string | undefined, isDanger: bo
     const defaultFallbackWind = BUNDLED_SOUNDS['white_noise_wind.mp3'];
 
     // 4. Load all ambient sounds concurrently using signature rates
-    const baseRates = isDanger 
-      ? Array(30).fill(0).map((_, i) => 0.5 + (i * (1.5 / 30))) // 0.5 to 2.0 smooth spread
-      : profile.baseRates;
+    const baseRates = profile.baseRates;
     const ambientPromises = ambientFiles.map(async (file, index) => {
       const fallbackAsset = BUNDLED_SOUNDS[file] || defaultFallbackAmbient;
       const source = await resolveAudioSource(file);
@@ -314,7 +306,7 @@ export async function playDynamicMix(waterType: string | undefined, isDanger: bo
       return { sound, file, rate: baseRates[index] || profile.baseRates[0] };
     });
 
-    const windPromises = Array.from({ length: isDanger ? 10 : 1 }).map(async () => {
+    const windPromises = Array.from({ length: 1 }).map(async () => {
       const randomWindIdx = Math.floor(Math.random() * 5) + 1;
       const windFile = `wind_${randomWindIdx}.mp3`;
       const fallbackAsset = BUNDLED_SOUNDS[windFile] || defaultFallbackWind;
