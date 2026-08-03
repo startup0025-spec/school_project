@@ -8,13 +8,9 @@ import React, {
 } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useColors } from '@/hooks/useColors';
-import { QUIET_SPOTS } from '@/constants/mockData';
-import { getPlaces, subscribeToPlacesCache } from '@/core_engine/src/database/local_places';
-import { Place } from '@/core_engine/src/models/place_model';
 
 export type Movement = 'calm' | 'walking' | 'busy';
-export type WaterSource = 'stream' | 'river' | 'sea';
+export type WaterSource = 'sea' | 'national_river' | 'lake' | 'local_river' | 'stream' | 'river';
 export type SafetyLevel = 'safe' | 'warning' | 'danger';
 export type OrbMode = 'calm' | 'walking' | 'busy' | 'danger';
 
@@ -57,11 +53,7 @@ const MOVEMENT_MESSAGES: Record<Movement, string> = {
 const DANGER_MESSAGE = '거긴 소리가 별로네요. 오늘은 위험하니까 다른 데로 가요.';
 const WARNING_MESSAGE = '수위가 상승 중입니다. 하천 접근에 각별히 주의하세요.';
 
-const SOURCE_DIARY_DETAIL: Record<WaterSource, string> = {
-  stream: '조용한 시냇가에서 10분 머물렀어요.',
-  river: '강가 산책로에서 10분 머물렀어요.',
-  sea: '바다와 함께 10분을 보냈어요.',
-};
+
 
 const DIARY_STORAGE_KEY = '@anywayTheSea:diary_entries';
 const INITIAL_DIARY: DiaryEntry[] = [];
@@ -100,6 +92,7 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [engineMessage, setEngineMessage] = useState<string | null>(null);
   const [rawSpeedMps, setRawSpeedMps] = useState<number>(0);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   // 일기장 스토리지 초기 로드
   useEffect(() => {
@@ -115,8 +108,12 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
             console.warn('[RippleContext] 일기 데이터 파싱 실패:', e);
           }
         }
+        setIsLoaded(true);
       })
-      .catch((e) => console.warn('[RippleContext] 일기장 로드 에러:', e));
+      .catch((e) => {
+        console.warn('[RippleContext] 일기장 로드 에러:', e);
+        setIsLoaded(true);
+      });
   }, []);
 
   // 3대 백그라운드 이벤트 리스너 통합 등록
@@ -152,7 +149,7 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
     // 3. 지오펜싱 트래킹 동작 상태 변경 감지
     const trackingSub = DeviceEventEmitter.addListener(
       'onTrackingStateUpdate',
-      (data: { isTracking?: boolean; state?: any; waterType?: any; rawSpeedMps?: number }) => {
+      (data: { isTracking?: boolean; state?: Record<string, unknown>; waterType?: WaterSource; rawSpeedMps?: number }) => {
         setIsTracking(data?.isTracking ?? false);
         if (data?.rawSpeedMps !== undefined) {
           setRawSpeedMps(data.rawSpeedMps);
@@ -199,7 +196,7 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
     const entry: DiaryEntry = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       label,
-      detail: customText ? customText : SOURCE_DIARY_DETAIL[waterSource],
+      detail: customText || '',
       placeId,
       placeName,
       customText,
@@ -207,16 +204,12 @@ export function RippleProvider({ children }: { children: React.ReactNode }) {
     setDiaryEntries((prev) => [entry, ...prev]);
   }, [waterSource]);
 
-  const isInitialMount = React.useRef(true);
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
+    if (!isLoaded) return;
     AsyncStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(diaryEntries)).catch((e) =>
       console.warn('[RippleContext] 일기장 저장 에러:', e)
     );
-  }, [diaryEntries]);
+  }, [diaryEntries, isLoaded]);
 
   const value = useMemo<RippleContextValue>(
     () => ({

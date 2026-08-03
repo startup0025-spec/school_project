@@ -1,7 +1,7 @@
 import TrackPlayer, { Event } from 'react-native-track-player';
 import { DeviceEventEmitter } from 'react-native';
 
-module.exports = async function () {
+const PlaybackService = async function () {
   TrackPlayer.addEventListener(Event.RemotePlay, () => {
     console.log('[TrackPlayer Service] RemotePlay');
     TrackPlayer.play();
@@ -20,3 +20,6 @@ module.exports = async function () {
     DeviceEventEmitter.emit('onMediaSessionPause');
   });
 };
+
+export default PlaybackService;
+module.exports = PlaybackService;

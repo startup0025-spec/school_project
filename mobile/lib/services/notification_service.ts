@@ -40,9 +40,10 @@ export async function triggerWelcomeNotification(place: Place): Promise<void> {
     const saved = await AsyncStorage.getItem(NOTIFICATION_STORAGE_KEY);
     let history = [];
     if (saved) {
-      try { history = JSON.parse(saved); } catch(e) {}
+      try { history = JSON.parse(saved); } catch(e) { /* ignore json parse error */ }
     }
     history.unshift(newNoti);
+    history = history.slice(0, 50);
     await AsyncStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(history));
 
     console.log(`[Notification Service] Welcome notification triggered & saved for ${place.name}`);
@@ -77,11 +78,12 @@ export async function triggerDangerNotification(place: Place): Promise<void> {
     };
 
     const saved = await AsyncStorage.getItem(NOTIFICATION_STORAGE_KEY);
-    let history: any[] = [];
+    let history: unknown[] = [];
     if (saved) {
-      try { history = JSON.parse(saved); } catch (e) {}
+      try { history = JSON.parse(saved); } catch (e) { /* ignore json parse error */ }
     }
     history.unshift(newNoti);
+    history = history.slice(0, 50);
     await AsyncStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(history));
 
     console.log(`[Notification Service] Danger notification triggered & saved for ${place.name}`);

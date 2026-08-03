@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
+import { Alert, Linking } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary as AppErrorBoundary } from '@/components/ErrorBoundary';
 import { RippleProvider } from '@/context/RippleContext';
 import { useColors } from '@/hooks/useColors';
 import {
@@ -16,7 +17,6 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as TaskManager from 'expo-task-manager';
-import { Alert, Linking } from 'react-native';
 import { configureBackgroundAudioSession } from '@/lib/services/audio_engine_service';
 import {
   startAdaptiveTracking,
@@ -24,33 +24,25 @@ import {
 } from '@/lib/services/geofencing_service';
 import { useLocationPermissionMonitor } from '@/hooks/useLocationPermissionMonitor';
 import TrackPlayer from 'react-native-track-player';
+import trackPlayerService from '@/lib/services/track_player_service';
 
 // Register headless playback service for background audio control
-TrackPlayer.registerPlaybackService(() => require('@/lib/services/track_player_service'));
+try {
+  TrackPlayer.registerPlaybackService(() => trackPlayerService);
+} catch (error) {
+  console.warn("TrackPlayer service registration deferred/failed:", error);
+}
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+import { AppModeProvider, useAppMode } from '@/context/AppModeContext';
+
 function RootLayoutNav() {
   const colors = useColors();
-  return (
-    <Stack
-      screenOptions={{
-        headerBackTitle: '뒤로',
-        headerStyle: { backgroundColor: colors.background },
-        headerTintColor: colors.foreground,
-        headerShadowVisible: false,
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="notifications" options={{ title: '알림' }} />
-    </Stack>
-  );
-}
-
-export default function RootLayout() {
+  const { isLoaded } = useAppMode();
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -70,8 +62,8 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
+    if ((fontsLoaded || fontError) && isLoaded) {
+      SplashScreen.hideAsync().catch(() => {});
       // 백그라운드 오디오 세션 등록 (지오펜싱이 물소리를 재생할 수 있도록 선행 등록)
       configureBackgroundAudioSession();
 
@@ -100,23 +92,39 @@ export default function RootLayout() {
         });
       });
     }
-  }, [fontsLoaded, fontError]);
-
-  if (!fontsLoaded && !fontError) return null;
+  }, [fontsLoaded, fontError, isLoaded]);
 
   return (
+    <Stack
+      screenOptions={{
+        headerBackTitle: '뒤로',
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.foreground,
+        headerShadowVisible: false,
+      }}
+    >
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="notifications" options={{ title: '알림' }} />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <SafeAreaProvider>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <GestureHandlerRootView>
-            <KeyboardProvider>
-              <RippleProvider>
-                <RootLayoutNav />
-              </RippleProvider>
-            </KeyboardProvider>
-          </GestureHandlerRootView>
-        </QueryClientProvider>
-      </ErrorBoundary>
+      <AppErrorBoundary>
+        <AppModeProvider>
+          <QueryClientProvider client={queryClient}>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <KeyboardProvider>
+                <RippleProvider>
+                  <RootLayoutNav />
+                </RippleProvider>
+              </KeyboardProvider>
+            </GestureHandlerRootView>
+          </QueryClientProvider>
+        </AppModeProvider>
+      </AppErrorBoundary>
     </SafeAreaProvider>
   );
 }

@@ -5,5 +5,8 @@ module.exports = function (api) {
       unstable_transformImportMeta: true,
       unstable_transformProfile: 'default'
     }]],
+    plugins: [
+      'react-native-reanimated/plugin',
+    ],
   };
 };

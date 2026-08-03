@@ -48,21 +48,33 @@ export interface QuietSpot extends Place {
 export const QUIET_SPOTS: QuietSpot[] = [];
 
 export const WATER_SOURCE_LABELS: Record<WaterSource, { label: string; description: string }> = {
+  sea: {
+    label: '연안',
+    description: '바닷가 근처예요. 파도 소리가 깊고 넓게 스르륵 밀려와요.',
+  },
+  national_river: {
+    label: '국가하천',
+    description: '웅장하고 커다란 강물을 따라 걷고 있어요. 묵직하고 넓은 물소리가 들려요.',
+  },
+  lake: {
+    label: '호소',
+    description: '고요하고 평화로운 호수 가에 서 있어요. 잔잔한 물결 소리가 들려요.',
+  },
+  local_river: {
+    label: '지방하천',
+    description: '도심 속 하천 산책로를 걷고 있어요. 물길이 활기차게 흘러가요.',
+  },
   stream: {
-    label: '시냇물',
-    description: '동네 시냇가를 걷고 있어요. 졸졸 흐르는 소리가 들려요.',
+    label: '세천',
+    description: '작은 세천을 지나고 있어요. 졸졸 맑게 흐르는 도랑물 소리가 정겨워요.',
   },
   river: {
     label: '강물',
     description: '강을 따라 걷고 있어요. 소리가 조금 더 넓어졌어요.',
   },
-  sea: {
-    label: '바다',
-    description: '바닷가 근처예요. 파도 소리로 스르륵 바뀌었어요.',
-  },
 };
 
-export const DEFAULT_FALLBACKS: Record<string, any> = {
+export const DEFAULT_FALLBACKS: Record<string, unknown> = {
   kma_forecast: {
     response: {
       header: { resultCode: '00', resultMsg: 'NORMAL_SERVICE' },
@@ -104,7 +116,7 @@ export const DEFAULT_FALLBACKS: Record<string, any> = {
   },
 };
 
-export function getFallbackData(url: string = ''): any {
+export function getFallbackData(url: string = ''): unknown {
   if (url.includes('/getUltraSrtFcst') || url.includes('/getVilageFcst')) {
     return DEFAULT_FALLBACKS.kma_forecast;
   }

@@ -23,7 +23,7 @@ setTimeout(() => {
             execSync('node -e "setTimeout(()=>{}, 2000)"');
         }
         console.log('Boot completed. Uninstalling old app...');
-        try { execSync(`"${adb}" uninstall ${pkg}`); } catch(e){}
+        try { execSync(`"${adb}" uninstall ${pkg}`); } catch(e){ /* ignore uninstall error */ }
         console.log('Installing APK...');
         execSync(`"${adb}" install -r "${apkPath}"`, { stdio: 'inherit' });
         

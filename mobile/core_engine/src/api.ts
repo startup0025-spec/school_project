@@ -29,7 +29,7 @@ function getKMABaseTime(): { baseDate: string; baseTime: string } {
   let month = kst.getMonth() + 1;
   let date = kst.getDate();
   let hours = kst.getHours();
-  let minutes = kst.getMinutes();
+  const minutes = kst.getMinutes();
 
   // KMA ultra short forecast releases at 45 minutes past every hour.
   if (minutes < 45) {
@@ -63,9 +63,11 @@ async function getSafetyLevelForPlace(place: Place): Promise<SafetyLevel> {
       const title = item.title || '';
       const hasLocation = (place.district && title.includes(place.district)) || title.includes('부산');
       if (hasLocation) {
-        if (title.includes('호우경보') || title.includes('풍랑경보')) {
+        const placeRecord = place as unknown as Record<string, string | undefined>;
+        const isSea = place.waterType === 'sea' || placeRecord.category?.includes('연안') || placeRecord.waterCategory?.includes('연안');
+        if (title.includes('호우경보') || (isSea && title.includes('풍랑경보'))) {
           currentLevel = getHigherLevel(currentLevel, SafetyLevel.Danger);
-        } else if (title.includes('호우주의보') || title.includes('풍랑주의보')) {
+        } else if (title.includes('호우주의보') || (isSea && title.includes('풍랑주의보'))) {
           currentLevel = getHigherLevel(currentLevel, SafetyLevel.Warning);
         }
       }
@@ -116,12 +118,24 @@ async function getSafetyLevelForPlace(place: Place): Promise<SafetyLevel> {
   return currentLevel;
 }
 
+function parseDefensiveNumber(val: unknown, fallback: number): number {
+  if (val === null || val === undefined) return fallback;
+  const num = typeof val === 'number' ? val : parseFloat(String(val));
+  return Number.isNaN(num) || !Number.isFinite(num) ? fallback : num;
+}
+
 /**
  * Checks if the user is inside the geofence of any place and calculates the safety level.
  */
 export async function checkGeofenceAndSafety(userLat: number, userLng: number): Promise<SafetyLevel> {
+  const lat = parseDefensiveNumber(userLat, NaN);
+  const lng = parseDefensiveNumber(userLng, NaN);
+  if (Number.isNaN(lat) || Number.isNaN(lng)) {
+    return SafetyLevel.Safe;
+  }
+
   const places = await getPlaces();
-  if (places.length === 0) {
+  if (!places || places.length === 0) {
     return SafetyLevel.Safe;
   }
 
@@ -129,14 +143,20 @@ export async function checkGeofenceAndSafety(userLat: number, userLng: number): 
   let minDistance = Infinity;
 
   for (const place of places) {
-    const dist = getHaversineDistance(userLat, userLng, place.latitude, place.longitude);
-    if (dist < minDistance) {
+    if (!place) continue;
+    const pLat = parseDefensiveNumber(place.latitude, NaN);
+    const pLng = parseDefensiveNumber(place.longitude, NaN);
+    if (Number.isNaN(pLat) || Number.isNaN(pLng)) continue;
+
+    const dist = getHaversineDistance(lat, lng, pLat, pLng);
+    if (!Number.isNaN(dist) && dist < minDistance) {
       minDistance = dist;
       closestPlace = place;
     }
   }
 
-  if (closestPlace && minDistance <= closestPlace.geofenceRadius) {
+  const geofenceRadius = closestPlace ? parseDefensiveNumber(closestPlace.geofenceRadius, 1000) : 1000;
+  if (closestPlace && minDistance <= geofenceRadius) {
     return await getSafetyLevelForPlace(closestPlace);
   }
 
@@ -158,7 +178,7 @@ export async function getSonificationParams(place: Place): Promise<AudioParams> 
       const forecastResponse = await fetchUltraShortForecast(baseDate, baseTime, place.kmaNx, place.kmaNy);
       const wsdItem = forecastResponse?.response?.body?.items?.item?.find(item => item.category === 'WSD');
       if (wsdItem) {
-        const wsdValue = parseFloat(wsdItem.fcstValue);
+        const wsdValue = parseDefensiveNumber(wsdItem.fcstValue, NaN);
         if (!Number.isNaN(wsdValue)) {
           const scaled = wsdValue / 15.0;
           windVolume = Math.max(0, Math.min(1, scaled));
@@ -177,8 +197,11 @@ export async function getSonificationParams(place: Place): Promise<AudioParams> 
     try {
       const waterLevels = await fetchRiverWaterLevel();
       const matchedLevel = waterLevels.find(wl => wl.stationName === place.waterStationName);
-      if (matchedLevel && !Number.isNaN(matchedLevel.waterLevel)) {
-        waterLevel = matchedLevel.waterLevel;
+      if (matchedLevel) {
+        const wlParsed = parseDefensiveNumber(matchedLevel.waterLevel, NaN);
+        if (!Number.isNaN(wlParsed)) {
+          waterLevel = wlParsed;
+        }
       }
     } catch (err) {
       console.warn('Error fetching water level for getSonificationParams:', err);
@@ -187,8 +210,11 @@ export async function getSonificationParams(place: Place): Promise<AudioParams> 
     try {
       const waterQualities = await fetchRiverWaterQuality();
       const matchedQuality = waterQualities.find(wq => wq.stationName === place.waterStationName);
-      if (matchedQuality && !Number.isNaN(matchedQuality.turbidity)) {
-        turbidity = matchedQuality.turbidity;
+      if (matchedQuality) {
+        const tParsed = parseDefensiveNumber(matchedQuality.turbidity, NaN);
+        if (!Number.isNaN(tParsed)) {
+          turbidity = tParsed;
+        }
       }
     } catch (err) {
       console.warn('Error fetching water quality for getSonificationParams:', err);
@@ -201,29 +227,29 @@ export async function getSonificationParams(place: Place): Promise<AudioParams> 
     ambientVolume = 0;
   } else if (waterLevel !== undefined) {
     const scaledAmbient = waterLevel / 2.0 + 0.3;
-    ambientVolume = Math.max(0, Math.min(1, scaledAmbient));
+    ambientVolume = Math.max(0, Math.min(1, parseDefensiveNumber(scaledAmbient, 0.6)));
   }
 
   // Calculate filterFrequency
   let filterFrequency = 20000; // default
   if (turbidity !== undefined) {
     const calculatedFreq = 20000 - turbidity * 1000;
-    filterFrequency = Math.max(200, Math.min(20000, calculatedFreq));
+    filterFrequency = Math.max(200, Math.min(20000, parseDefensiveNumber(calculatedFreq, 20000)));
   }
 
   // Calculate pitch
   let pitch = 1.0; // default
   if (waterLevel !== undefined) {
     const calculatedPitch = 1.0 + (waterLevel - 0.5);
-    pitch = Math.max(0.5, Math.min(2.0, calculatedPitch));
+    pitch = Math.max(0.5, Math.min(2.0, parseDefensiveNumber(calculatedPitch, 1.0)));
   }
 
   return {
     waterType: place.waterType,
-    ambientVolume,
-    windVolume,
-    pitch,
-    filterFrequency,
+    ambientVolume: parseDefensiveNumber(ambientVolume, 0.6),
+    windVolume: parseDefensiveNumber(windVolume, 0.2),
+    pitch: parseDefensiveNumber(pitch, 1.0),
+    filterFrequency: parseDefensiveNumber(filterFrequency, 20000),
     alarmActive,
   };
 }

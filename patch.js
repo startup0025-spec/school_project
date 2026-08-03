@@ -31,15 +31,21 @@ function processDir(dir) {
     }
 }
 
-let root = 'C:\\mobile\\node_modules\\rkc';
+let root = path.join(__dirname, 'mobile', 'node_modules', 'rkc');
 
-// Special fix for package.json to ONLY replace codegenConfig name, not javaPackageName
-let pkgPath = path.join(root, 'package.json');
-let pkgContent = fs.readFileSync(pkgPath, 'utf8');
-pkgContent = pkgContent.replace(/"name":\s*"reactnativekeyboardcontroller"/, '"name": "rkc"');
-fs.writeFileSync(pkgPath, pkgContent, 'utf8');
-console.log('Updated package.json');
+try {
+    // Special fix for package.json to ONLY replace codegenConfig name, not javaPackageName
+    let pkgPath = path.join(root, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+        let pkgContent = fs.readFileSync(pkgPath, 'utf8');
+        pkgContent = pkgContent.replace(/"name":\s*"reactnativekeyboardcontroller"/, '"name": "rkc"');
+        fs.writeFileSync(pkgPath, pkgContent, 'utf8');
+        console.log('Updated package.json');
+    }
 
-processDir(path.join(root, 'android', 'src', 'main', 'jni'));
-processDir(path.join(root, 'common'));
-processDir(path.join(root, 'ios'));
+    processDir(path.join(root, 'android', 'src', 'main', 'jni'));
+    processDir(path.join(root, 'common'));
+    processDir(path.join(root, 'ios'));
+} catch (err) {
+    console.error('Error during patch:', err);
+}

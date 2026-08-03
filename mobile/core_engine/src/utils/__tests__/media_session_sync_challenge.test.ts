@@ -40,13 +40,23 @@ class MockAudioEngine {
   }
 }
 
+type NavWithMediaSession = {
+  navigator: {
+    mediaSession: {
+      playbackState: string;
+      metadata: { title: string; artist: string; album: string; artwork: Array<{ src: string; sizes: string; type: string }> };
+      _triggerAction: (act: string) => Promise<void>;
+    };
+  };
+};
+
 describe('Adversarial Challenge: R3 Native Media Session & Audio Engine Sync', () => {
   let mockEngine: MockAudioEngine;
 
   beforeEach(() => {
     // Reset global navigator mediaSession state
     if (typeof globalThis !== 'undefined') {
-      delete (globalThis as any).navigator?.mediaSession;
+      delete (globalThis as unknown as { navigator?: { mediaSession?: unknown } }).navigator?.mediaSession;
     }
     mockEngine = new MockAudioEngine();
   });
@@ -63,7 +73,7 @@ describe('Adversarial Challenge: R3 Native Media Session & Audio Engine Sync', (
       );
 
       initMediaSession();
-      const nav = (globalThis as any).navigator;
+      const nav = (globalThis as unknown as Required<NavWithMediaSession>).navigator;
       assert.ok(nav?.mediaSession?._triggerAction, 'MediaSession action trigger must exist');
 
       // Start engine playback
@@ -91,7 +101,7 @@ describe('Adversarial Challenge: R3 Native Media Session & Audio Engine Sync', (
       );
 
       initMediaSession();
-      const nav = (globalThis as any).navigator;
+      const nav = (globalThis as unknown as Required<NavWithMediaSession>).navigator;
 
       // Ensure engine is initially stopped
       await mockEngine.stopAmbientSound();
@@ -117,7 +127,7 @@ describe('Adversarial Challenge: R3 Native Media Session & Audio Engine Sync', (
       );
 
       initMediaSession();
-      const nav = (globalThis as any).navigator;
+      const nav = (globalThis as unknown as Required<NavWithMediaSession>).navigator;
 
       const actions = ['play', 'pause', 'play', 'pause', 'play', 'pause', 'play', 'pause', 'play', 'pause'];
       for (const act of actions) {
@@ -142,7 +152,7 @@ describe('Adversarial Challenge: R3 Native Media Session & Audio Engine Sync', (
       );
 
       initMediaSession();
-      const nav = (globalThis as any).navigator;
+      const nav = (globalThis as unknown as Required<NavWithMediaSession>).navigator;
 
       // Trigger concurrent play and pause actions
       await Promise.all([
@@ -157,10 +167,10 @@ describe('Adversarial Challenge: R3 Native Media Session & Audio Engine Sync', (
 
     test('Null/Unregistered handler fallback safe execution', async () => {
       initMediaSession();
-      const nav = (globalThis as any).navigator;
+      const nav = (globalThis as unknown as Required<NavWithMediaSession>).navigator;
 
       // Explicitly pass null handlers
-      registerLockscreenAudioHandlers(null as any, null as any);
+      registerLockscreenAudioHandlers(null as unknown as () => Promise<void>, null as unknown as () => Promise<void>);
 
       // Should complete gracefully without crashing
       await nav.mediaSession._triggerAction('play');
@@ -222,7 +232,7 @@ describe('Adversarial Challenge: R3 Native Media Session & Audio Engine Sync', (
 
     test('MediaSession Metadata reflects artwork data URI correctly', () => {
       initMediaSession();
-      const nav = (globalThis as any).navigator;
+      const nav = (globalThis as unknown as Required<NavWithMediaSession>).navigator;
       const metadata = nav.mediaSession.metadata;
 
       assert.ok(metadata, 'Metadata must be defined');

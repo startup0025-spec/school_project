@@ -1,5 +1,24 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Network from 'expo-network';
+import seaFallback from '../../assets/sounds/ambient_sea.mp3';
+import riverFallback from '../../assets/sounds/ambient_river.mp3';
+import windFallback from '../../assets/sounds/white_noise_wind.mp3';
+import sirenFallback from '../../assets/sounds/emergency_siren.wav';
+import sea1 from '../../assets/sounds/sea_1.mp3';
+import sea2 from '../../assets/sounds/sea_2.mp3';
+import sea3 from '../../assets/sounds/sea_3.mp3';
+import sea4 from '../../assets/sounds/sea_4.mp3';
+import sea5 from '../../assets/sounds/sea_5.mp3';
+import river1 from '../../assets/sounds/river_1.mp3';
+import river2 from '../../assets/sounds/river_2.mp3';
+import river3 from '../../assets/sounds/river_3.mp3';
+import river4 from '../../assets/sounds/river_4.mp3';
+import river5 from '../../assets/sounds/river_5.mp3';
+import wind1 from '../../assets/sounds/wind_1.mp3';
+import wind2 from '../../assets/sounds/wind_2.mp3';
+import wind3 from '../../assets/sounds/wind_3.mp3';
+import wind4 from '../../assets/sounds/wind_4.mp3';
+import wind5 from '../../assets/sounds/wind_5.mp3';
 
 const CDN_BASE_URL = 'https://startup0025-spec.github.io/school_project/sounds/';
 export const CACHE_DIR = `${FileSystem.documentDirectory}sounds/`;
@@ -25,31 +44,26 @@ const loadingFiles = new Map<string, number>();
 let activeSoundChecker: ((filename: string) => Promise<boolean>) | null = null;
 let activeSoundUnloader: ((filename: string) => Promise<void>) | null = null;
 
-const seaFallback = require('../../assets/sounds/ambient_sea.mp3');
-const riverFallback = require('../../assets/sounds/ambient_river.mp3');
-const windFallback = require('../../assets/sounds/white_noise_wind.mp3');
-const sirenFallback = require('../../assets/sounds/emergency_siren.wav');
-
-export const BUNDLED_SOUNDS: Record<string, any> = {
+export const BUNDLED_SOUNDS: Record<string, unknown> = {
   'ambient_sea.mp3': seaFallback,
   'ambient_river.mp3': riverFallback,
   'white_noise_wind.mp3': windFallback,
   'emergency_siren.wav': sirenFallback,
-  'sea_1.mp3': require('../../assets/sounds/sea_1.mp3'),
-  'sea_2.mp3': require('../../assets/sounds/sea_2.mp3'),
-  'sea_3.mp3': require('../../assets/sounds/sea_3.mp3'),
-  'sea_4.mp3': require('../../assets/sounds/sea_4.mp3'),
-  'sea_5.mp3': require('../../assets/sounds/sea_5.mp3'),
-  'river_1.mp3': require('../../assets/sounds/river_1.mp3'),
-  'river_2.mp3': require('../../assets/sounds/river_2.mp3'),
-  'river_3.mp3': require('../../assets/sounds/river_3.mp3'),
-  'river_4.mp3': require('../../assets/sounds/river_4.mp3'),
-  'river_5.mp3': require('../../assets/sounds/river_5.mp3'),
-  'wind_1.mp3': require('../../assets/sounds/wind_1.mp3'),
-  'wind_2.mp3': require('../../assets/sounds/wind_2.mp3'),
-  'wind_3.mp3': require('../../assets/sounds/wind_3.mp3'),
-  'wind_4.mp3': require('../../assets/sounds/wind_4.mp3'),
-  'wind_5.mp3': require('../../assets/sounds/wind_5.mp3'),
+  'sea_1.mp3': sea1,
+  'sea_2.mp3': sea2,
+  'sea_3.mp3': sea3,
+  'sea_4.mp3': sea4,
+  'sea_5.mp3': sea5,
+  'river_1.mp3': river1,
+  'river_2.mp3': river2,
+  'river_3.mp3': river3,
+  'river_4.mp3': river4,
+  'river_5.mp3': river5,
+  'wind_1.mp3': wind1,
+  'wind_2.mp3': wind2,
+  'wind_3.mp3': wind3,
+  'wind_4.mp3': wind4,
+  'wind_5.mp3': wind5,
 };
 
 interface FileMetadata {
@@ -264,7 +278,7 @@ export function cancelActiveDownloads(): void {
 /**
  * Resolves the playback source. Checks local cache FIRST.
  */
-export async function resolveAudioSource(filename: string): Promise<any> {
+export async function resolveAudioSource(filename: string): Promise<unknown> {
   const localUri = `${CACHE_DIR}${filename}`;
   try {
     const fileInfo = await FileSystem.getInfoAsync(localUri);
@@ -298,8 +312,7 @@ export async function resolveAudioSource(filename: string): Promise<any> {
       
       // DownloadAsync promise chain handles completion and errors safely
       download.downloadAsync()
-        .then(async (downloadResult: any) => {
-          activeDownloads.delete(filename);
+        .then(async (downloadResult: FileSystem.FileSystemDownloadResult | undefined) => {
           if (downloadResult) {
             console.log(`[Audio Cache] Download finished: ${filename}`);
             const rawLength = downloadResult.headers?.['content-length'] || downloadResult.headers?.['Content-Length'];
@@ -308,8 +321,7 @@ export async function resolveAudioSource(filename: string): Promise<any> {
             await enforceCacheLimits();
           }
         })
-        .catch(async (err: any) => {
-          activeDownloads.delete(filename);
+        .catch(async (err: unknown) => {
           // Catch block deletes partial temporary files on error/cancel
           try {
             const info = await FileSystem.getInfoAsync(localUri);
@@ -320,9 +332,12 @@ export async function resolveAudioSource(filename: string): Promise<any> {
           } catch (cleanupErr) {
             console.warn(`[Audio Cache] Cleanup failed for ${filename}:`, cleanupErr);
           }
-          if (!err.message?.includes('cancelled')) {
+          if (!(err as Error)?.message?.includes('cancelled')) {
             console.warn(`[Audio Cache] Background cache write failed: ${filename}`, err);
           }
+        })
+        .finally(() => {
+          activeDownloads.delete(filename);
         });
       
       return { uri: cdnUrl };
@@ -359,23 +374,24 @@ export async function prefetchAudioAssets(filenames: string[]): Promise<void> {
         
         try {
           const result = await download.downloadAsync();
-          activeDownloads.delete(filename);
-
           if (result) {
             const rawLength = result.headers?.['content-length'] || result.headers?.['Content-Length'];
             const fileSize = rawLength ? parseInt(rawLength, 10) : 5 * 1024 * 1024;
             await touchFile(filename, fileSize);
           }
         } catch (err) {
-          activeDownloads.delete(filename);
           // Delete partial temporary files on error/cancel
           try {
             const info = await FileSystem.getInfoAsync(localUri);
             if (info.exists) {
               await FileSystem.deleteAsync(localUri, { idempotent: true });
             }
-          } catch {}
+          } catch {
+            /* ignore cleanup error */
+          }
           throw err;
+        } finally {
+          activeDownloads.delete(filename);
         }
       } else {
         await touchFile(filename, fileInfo.size);

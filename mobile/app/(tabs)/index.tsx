@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
-import { useRipple, type Movement, type OrbMode } from '@/context/RippleContext';
+import { useRipple, type Movement } from '@/context/RippleContext';
+import { useAppMode } from '@/context/AppModeContext';
 import { RippleOrb } from '@/components/RippleOrb';
 import { RippleBar } from '@/components/RippleBar';
 import { SegmentedControl } from '@/components/SegmentedControl';
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { movement, setMovement, safetyLevel, currentMessage, orbMode, rawSpeedMps } = useRipple();
+  const { mode, switchMode } = useAppMode();
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
@@ -45,7 +47,12 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>오늘의 물결</Text>
-          <Text style={[styles.title, { color: colors.foreground }]}>잔물결</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Text style={[styles.title, { color: colors.foreground, marginTop: 0 }]}>잔물결</Text>
+            <Pressable onPress={switchMode} accessibilityRole="button">
+              <Feather name={mode === 'DEMO' ? 'toggle-left' : 'toggle-right'} size={22} color={colors.primary} />
+            </Pressable>
+          </View>
         </View>
         <Pressable
           onPress={() => router.push('/notifications')}
@@ -60,13 +67,13 @@ export default function HomeScreen() {
         <RippleOrb 
           mode={orbMode} 
           size={260} 
-          rawSpeedMps={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? rawSpeedMps : undefined} 
+          rawSpeedMps={mode === 'PRODUCTION' ? rawSpeedMps : undefined} 
         />
       </View>
 
       <Text style={[styles.copy, { color: colors.foreground }]}>{MOVEMENT_COPY[movement]}</Text>
 
-      {process.env.EXPO_PUBLIC_BUILD_MODE !== 'PRODUCTION' ? (
+      {mode !== 'PRODUCTION' ? (
         <View style={styles.controlBlock}>
           <Text style={[styles.controlLabel, { color: colors.mutedForeground }]}>[DEMO] 강제 상태 주입 (GPS 오버라이드)</Text>
           <SegmentedControl options={MOVEMENT_OPTIONS} value={movement} onChange={setMovement} />

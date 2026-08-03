@@ -1,6 +1,7 @@
 /**
  * Reusable Haversine distance and coordinate utilities.
  */
+import { point, lineString, nearestPointOnLine } from '@turf/turf';
 
 const EARTH_RADIUS_METERS = 6371000;
 
@@ -67,7 +68,7 @@ export function getHaversineDistance(
  * Returns a new array sorted by Haversine distance from the given user coordinates.
  * The closest place is positioned at index 0.
  */
-export function sortPlacesByDistance<T extends { latitude: number; longitude: number; waterCategory?: string }>(
+export function sortPlacesByDistance<T extends { latitude: number; longitude: number; waterCategory?: string; geojsonSegments?: any }>(
   placesList: (T | null | undefined)[],
   userCoords: { latitude: number; longitude: number; altitude?: number }
 ): T[] {
@@ -77,18 +78,55 @@ export function sortPlacesByDistance<T extends { latitude: number; longitude: nu
     return validPlaces;
   }
 
+  const userPt = point([userCoords.longitude, userCoords.latitude]);
+
   const decorated = validPlaces.map(place => {
-    const rawDist = getHaversineDistance(
-      userCoords.latitude,
-      userCoords.longitude,
-      place.latitude,
-      place.longitude
-    );
-    let dist = Number.isNaN(rawDist) ? Number.MAX_VALUE : rawDist;
+    let rawDist = Number.MAX_VALUE;
+    let nearestLng = place.longitude;
+    let nearestLat = place.latitude;
+    
+    if (place.geojsonSegments && Array.isArray(place.geojsonSegments) && place.geojsonSegments.length > 0) {
+      try {
+        let minDist = Number.MAX_VALUE;
+        let bestCoord = null;
+        for (const seg of place.geojsonSegments) {
+          if (seg.coordinates && seg.coordinates.length >= 2) {
+            const line = lineString(seg.coordinates);
+            const snapped = nearestPointOnLine(line, userPt, { units: 'meters' });
+            if (snapped && snapped.properties.dist !== undefined && snapped.properties.dist < minDist) {
+              minDist = snapped.properties.dist;
+              bestCoord = snapped.geometry.coordinates;
+            }
+          }
+        }
+        if (bestCoord) {
+          rawDist = minDist;
+          nearestLng = bestCoord[0];
+          nearestLat = bestCoord[1];
+        }
+      } catch (e) {
+        console.warn("[haversine] Turf nearestPointOnLine error", e);
+      }
+    }
+
+    if (rawDist === Number.MAX_VALUE) {
+      const hd = getHaversineDistance(
+        userCoords.latitude,
+        userCoords.longitude,
+        place.latitude,
+        place.longitude
+      );
+      rawDist = Number.isNaN(hd) ? Number.MAX_VALUE : hd;
+    }
+    
+    // We clone the place to safely update latitude/longitude for the UI marker
+    const updatedPlace = { ...place, latitude: nearestLat, longitude: nearestLng };
+
+    let dist = rawDist;
 
     if (userCoords.altitude !== undefined && dist !== Number.MAX_VALUE) {
       const alt = userCoords.altitude;
-      const cat = place.waterCategory || '';
+      const cat = updatedPlace.waterCategory || '';
       
       if (alt > 100) {
         if (cat === '연안') {
@@ -102,7 +140,7 @@ export function sortPlacesByDistance<T extends { latitude: number; longitude: nu
     }
 
     return {
-      place,
+      place: updatedPlace,
       dist
     };
   });

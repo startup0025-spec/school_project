@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 부산 수변 공간 및 쉼터 데이터 모델 정의
  *
  * 이 파일은 외부 의존성이 전혀 없는 순수 타입(Type) 정의 파일입니다.
@@ -17,12 +17,12 @@
  *           설명과 파형 느낌이 따라 바뀝니다."
  * 설계서 53~55라인: ambient_sea.mp3, ambient_river.mp3, white_noise_wind.mp3
  *
- * - 'stream' → ambient_river.mp3 (시냇물/소하천)
+ * - 'stream' → ambient_river.mp3 (도랑/세천)
  * - 'river'  → ambient_river.mp3 (큰 하천, 탁도/수위 데이터 연동)
  * - 'sea'    → ambient_sea.mp3   (바다, 파고 데이터 연동)
  * - 'none'   → 수변이 아닌 내륙 쉼터 (오디오 소리화 미적용)
  */
-export type WaterType = 'stream' | 'river' | 'sea' | 'none';
+export type WaterType = 'sea' | 'national_river' | 'lake' | 'local_river' | 'stream' | 'river' | 'none';
 
 /**
  * 부산 수변 공간 및 쉼터의 단일 장소 데이터 구조체.
@@ -63,6 +63,16 @@ export interface Place {
    * UX 3.2항 & 설계서 53~55라인 근거.
    */
   waterType: WaterType;
+
+  /**
+   * 물 카테고리 (예: '연안', '국가하천', '호소', '지방하천', '세천')
+   */
+  waterCategory?: string;
+
+  /**
+   * 카테고리 가중치 우선순위 (1: 연안, 2: 국가하천, 3: 호소, 4: 지방하천, 5: 세천)
+   */
+  priority?: number;
 
   /**
    * 카드/배경 이미지 URL.
@@ -115,9 +125,8 @@ export interface Place {
    *               (부산 지역 호우/풍랑 경보 추출 → 안전 가드 연동)"
    * 기상특보는 격자가 아니라 행정구역 단위로 발령됨.
    *
-   * 예: '해운대구', '사하구', '동래구'
    */
-  district: string;
+  district?: string;
 
   /**
    * 부산시 하천 수질/수위 자동측정망 API 조회용 측정소 이름.
@@ -130,5 +139,10 @@ export interface Place {
    * 예: '온천천', '수영강', '낙동강하구'
    */
   waterStationName?: string;
+
+  /**
+   * VWorld WFS 기반의 동적 폴리곤/라인스트링 지오메트리 정보.
+   */
+  geojson?: any;
 }
 

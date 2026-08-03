@@ -1,4 +1,4 @@
-import { Audio } from 'expo-av';
+import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
 import { 
   resolveAudioSource, 
   cancelActiveDownloads, 
@@ -11,10 +11,13 @@ import {
 } from './audio_caching_service';
 import {
   initMediaSession,
-  updateMediaPlaybackState,
   registerLockscreenAudioHandlers,
   RIPPLE_ARTWORK_DATA_URI,
+  updateMediaPlaybackState,
 } from './media_session_service';
+
+export const INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS = InterruptionModeIOS.MixWithOthers;
+export const INTERRUPTION_MODE_ANDROID_DUCK_OTHERS = InterruptionModeAndroid.DuckOthers;
 
 export { initMediaSession, RIPPLE_ARTWORK_DATA_URI };
 
@@ -56,8 +59,8 @@ registerActiveSoundController(
  */
 async function loadSoundWithFallback(
   filename: string,
-  source: any,
-  fallbackAsset: any,
+  source: unknown,
+  fallbackAsset: unknown,
   requestId: number,
   timeoutMs: number = 5000
 ): Promise<{ sound: Audio.Sound }> {
@@ -69,8 +72,9 @@ async function loadSoundWithFallback(
     // 1. Acquire temporary loading lock before resolving
     lockFileForLoading(filename);
 
-    if (source && source.uri && source.uri.startsWith('http')) {
-      const loadPromise = Audio.Sound.createAsync(source, { shouldPlay: false });
+    const sourceObj = source as { uri?: string };
+    if (sourceObj && sourceObj.uri && sourceObj.uri.startsWith('http')) {
+      const loadPromise = Audio.Sound.createAsync(source as { uri: string }, { shouldPlay: false });
       
       const wrappedLoadPromise = loadPromise
         .then((result: Awaited<ReturnType<typeof Audio.Sound.createAsync>>) => {
@@ -83,7 +87,7 @@ async function loadSoundWithFallback(
         .catch((err: unknown) => {
           if (didTimeout) {
             console.log(`[Audio Fallback] Suppressed late-running loader error:`, (err as Error)?.message || err);
-            return undefined as any;
+            return undefined as unknown as { sound: Audio.Sound };
           }
           throw err;
         });
@@ -101,20 +105,20 @@ async function loadSoundWithFallback(
       return result;
     }
 
-    const result = await Audio.Sound.createAsync(source, { shouldPlay: false });
+    const result = await Audio.Sound.createAsync(source as number, { shouldPlay: false });
     soundInstance = result.sound;
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (timeoutId) clearTimeout(timeoutId);
 
     console.warn(
       `[Audio Fallback] Load failed or timed out for ${filename}. ` +
       `Falling back to local bundled asset. Error:`,
-      error.message || error
+      (error as Error)?.message || error
     );
 
     // 3. Immediately load the corresponding bundled require asset from BUNDLED_SOUNDS
-    const result = await Audio.Sound.createAsync(fallbackAsset, { shouldPlay: false });
+    const result = await Audio.Sound.createAsync(fallbackAsset as number, { shouldPlay: false });
     soundInstance = result.sound;
     return result;
   } finally {
@@ -136,6 +140,9 @@ export async function configureBackgroundAudioSession(): Promise<void> {
       playsInSilentModeIOS: true,
       staysActiveInBackground: true,
       playThroughEarpieceAndroid: false,
+      shouldDuckAndroid: true,
+      interruptionModeIOS: INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS,
+      interruptionModeAndroid: INTERRUPTION_MODE_ANDROID_DUCK_OTHERS,
     });
     console.log('[Audio Engine] Background session mode registered.');
     initMediaSession();
@@ -146,10 +153,9 @@ export async function configureBackgroundAudioSession(): Promise<void> {
 }
 
 export async function stopAmbientSound(): Promise<void> {
+  activePlaybackRequestId++;
   try {
-    if (typeof globalThis !== 'undefined' && (globalThis as any).navigator?.mediaSession) {
-      (globalThis as any).navigator.mediaSession.playbackState = 'paused';
-    }
+    updateMediaPlaybackState('paused');
     // 1. Clear volume envelope & playback intervals
     for (const interval of activeIntervals) {
       clearInterval(interval);
@@ -170,10 +176,14 @@ export async function stopAmbientSound(): Promise<void> {
       soundsToUnload.map(async (sound) => {
         try {
           await sound.stopAsync();
-        } catch {}
+        } catch {
+          /* ignore stop error */
+        }
         try {
           await sound.unloadAsync();
-        } catch {}
+        } catch {
+          /* ignore unload error */
+        }
       })
     );
     console.log('[Audio Engine] Stopped and unloaded all active audio tracks.');
@@ -182,67 +192,141 @@ export async function stopAmbientSound(): Promise<void> {
   }
 }
 
+export type WaterCategory = 'sea' | 'national_river' | 'lake' | 'local_river' | 'stream';
+
+export interface WaterAudioProfile {
+  typeStr: 'sea' | 'river';
+  baseRates: number[];
+  ambientVolume: number;
+  windVolumeRange: [number, number];
+  gustIntervalRange: [number, number];
+  pitchCorrection: boolean;
+}
+
+export const WATER_AUDIO_PROFILES: Record<string, WaterAudioProfile> = {
+  sea: {
+    typeStr: 'sea',
+    baseRates: [0.85, 0.95, 1.05],
+    ambientVolume: 0.85,
+    windVolumeRange: [0.35, 0.65],
+    gustIntervalRange: [600, 1200],
+    pitchCorrection: false,
+  },
+  national_river: {
+    typeStr: 'river',
+    baseRates: [0.90, 1.0, 1.08],
+    ambientVolume: 0.80,
+    windVolumeRange: [0.30, 0.55],
+    gustIntervalRange: [500, 1000],
+    pitchCorrection: false,
+  },
+  lake: {
+    typeStr: 'river',
+    baseRates: [0.72, 0.80, 0.88],
+    ambientVolume: 0.50,
+    windVolumeRange: [0.15, 0.35],
+    gustIntervalRange: [800, 1600],
+    pitchCorrection: false,
+  },
+  local_river: {
+    typeStr: 'river',
+    baseRates: [1.0, 1.08, 1.15],
+    ambientVolume: 0.70,
+    windVolumeRange: [0.25, 0.50],
+    gustIntervalRange: [400, 800],
+    pitchCorrection: false,
+  },
+  stream: {
+    typeStr: 'river',
+    baseRates: [1.18, 1.28, 1.38],
+    ambientVolume: 0.65,
+    windVolumeRange: [0.20, 0.40],
+    gustIntervalRange: [300, 700],
+    pitchCorrection: false,
+  },
+  river: {
+    typeStr: 'river',
+    baseRates: [1.0, 1.08, 1.15],
+    ambientVolume: 0.70,
+    windVolumeRange: [0.25, 0.50],
+    gustIntervalRange: [400, 800],
+    pitchCorrection: false,
+  },
+};
+
 /**
  * Dynamic Multi-Instance Audio Mixing Engine
  * 
- * 1. Selects 3 random distinct ambient sound assets (sea_1..5 or river_1..5).
- * 2. Overlays all 3 instances with pitch/rate variation (0.95, 1.0, 1.05) and random position offset.
+ * 1. Selects 3 random distinct ambient sound assets out of 5 (sea_1..5 or river_1..5).
+ * 2. Overlays all 3 instances with pitch/rate frequency modulation and category-specific profile.
  * 3. Selects 1 random wind asset (wind_1..5) with real-time volume envelope fluctuation.
+ * 4. Supports 5 distinct water categories: 연안 ('sea'), 국가하천 ('national_river'), 호소 ('lake'), 지방하천 ('local_river'), 세천 ('stream').
  */
 export async function playDynamicMix(waterType: string | undefined, isDanger: boolean = false): Promise<void> {
   if (waterType) {
     lastWaterType = waterType;
   }
   initMediaSession();
-  if (typeof globalThis !== 'undefined' && (globalThis as any).navigator?.mediaSession) {
-    (globalThis as any).navigator.mediaSession.playbackState = 'playing';
-  }
-  const currentRequestId = ++activePlaybackRequestId;
-  console.log(`[Audio Engine] [Req #${currentRequestId}] Dynamic mix requested for waterType: ${waterType || 'default'}, isDanger: ${isDanger}`);
+  updateMediaPlaybackState('playing');
+
+  let currentRequestId = 0;
 
   try {
     cancelActiveDownloads();
     await stopAmbientSound();
+    currentRequestId = ++activePlaybackRequestId;
+    console.log(`[Audio Engine] [Req #${currentRequestId}] Dynamic mix requested for waterType: ${waterType || 'default'}, isDanger: ${isDanger}`);
 
-    // 1. Select random distinct ambient sound assets out of 5
-    const typeStr = waterType === 'sea' ? 'sea' : 'river';
+    // 1. Retrieve specific audio profile for the selected water category
+    const categoryKey = (waterType && WATER_AUDIO_PROFILES[waterType]) ? waterType : 'stream';
+    const profile = WATER_AUDIO_PROFILES[categoryKey] || WATER_AUDIO_PROFILES.stream;
+    const typeStr = profile.typeStr;
+
+    // 2. Select random distinct ambient sound assets out of 5
     const pool = [1, 2, 3, 4, 5];
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    const trackCount = isDanger ? 5 : 3;
-    const selectedAmbientIndices = pool.slice(0, trackCount);
+    const trackCount = isDanger ? 30 : 3;
+    let selectedAmbientIndices = pool.slice(0, Math.min(trackCount, pool.length));
+    if (isDanger) {
+      selectedAmbientIndices = [];
+      for (let i = 0; i < 6; i++) {
+        selectedAmbientIndices.push(...pool); // 30 tracks (6 sets of 5)
+      }
+    }
     const ambientFiles = selectedAmbientIndices.map((idx) => `${typeStr}_${idx}.mp3`);
     const fallbackAmbientKey = typeStr === 'sea' ? 'ambient_sea.mp3' : 'ambient_river.mp3';
     const defaultFallbackAmbient = BUNDLED_SOUNDS[fallbackAmbientKey];
 
-    // 2. Select 1 random wind asset out of 5
-    const randomWindIdx = Math.floor(Math.random() * 5) + 1;
-    const windFile = `wind_${randomWindIdx}.mp3`;
     const defaultFallbackWind = BUNDLED_SOUNDS['white_noise_wind.mp3'];
 
-    // 3. Load all ambient sounds concurrently
-    const baseRates = isDanger ? [1.2, 1.3, 1.4, 1.5, 1.6] : [0.95, 1.0, 1.05];
+    // 4. Load all ambient sounds concurrently using signature rates
+    const baseRates = isDanger 
+      ? Array(30).fill(0).map((_, i) => 0.5 + (i * (1.5 / 30))) // 0.5 to 2.0 smooth spread
+      : profile.baseRates;
     const ambientPromises = ambientFiles.map(async (file, index) => {
       const fallbackAsset = BUNDLED_SOUNDS[file] || defaultFallbackAmbient;
       const source = await resolveAudioSource(file);
       if (currentRequestId !== activePlaybackRequestId) return null;
       const { sound } = await loadSoundWithFallback(file, source, fallbackAsset, currentRequestId);
-      return { sound, file, rate: baseRates[index] || (0.92 + Math.random() * 0.16) };
+      return { sound, file, rate: baseRates[index] || profile.baseRates[0] };
     });
 
-    const windPromise = (async () => {
+    const windPromises = Array.from({ length: isDanger ? 10 : 1 }).map(async () => {
+      const randomWindIdx = Math.floor(Math.random() * 5) + 1;
+      const windFile = `wind_${randomWindIdx}.mp3`;
       const fallbackAsset = BUNDLED_SOUNDS[windFile] || defaultFallbackWind;
       const source = await resolveAudioSource(windFile);
       if (currentRequestId !== activePlaybackRequestId) return null;
       const { sound } = await loadSoundWithFallback(windFile, source, fallbackAsset, currentRequestId);
       return { sound, file: windFile };
-    })();
+    });
 
-    const [ambientResults, windResult] = await Promise.all([
+    const [ambientResults, windResults] = await Promise.all([
       Promise.all(ambientPromises),
-      windPromise,
+      Promise.all(windPromises),
     ]);
 
     // Check if request was superseded during loading
@@ -251,18 +335,22 @@ export async function playDynamicMix(waterType: string | undefined, isDanger: bo
       for (const res of ambientResults) {
         if (res?.sound) await res.sound.unloadAsync().catch(() => {});
       }
-      if (windResult?.sound) await windResult.sound.unloadAsync().catch(() => {});
+      for (const res of windResults) {
+        if (res?.sound) await res.sound.unloadAsync().catch(() => {});
+      }
       return;
     }
 
-    // 4. Play ambient sounds overlaid with pitch/rate variation and random position offset
+    // 5. Play ambient sounds overlaid with pitch/rate variation, volume balance, and random position offset
     for (const res of ambientResults) {
       if (!res) continue;
       const { sound, file, rate } = res;
       const offsetMs = Math.floor(Math.random() * 3000);
 
       await sound.setIsLoopingAsync(true);
-      await sound.setRateAsync(rate, false).catch(() => {});
+      const ambVol = isDanger ? 1.0 : profile.ambientVolume;
+      await sound.setVolumeAsync(ambVol).catch(() => {});
+      await sound.setRateAsync(rate, profile.pitchCorrection).catch(() => {});
       await sound.setPositionAsync(offsetMs).catch(() => {});
       await sound.playAsync();
 
@@ -271,39 +359,52 @@ export async function playDynamicMix(waterType: string | undefined, isDanger: bo
       activeSounds.push(sound);
     }
 
-    // 5. Play wind sound looping with real-time volume envelope animation
-    if (windResult) {
+    // 6. Play wind sound looping with real-time volume envelope animation
+    for (const windResult of windResults) {
+      if (!windResult) continue;
       const { sound: windSound, file: wFile } = windResult;
+      const initialWindVol = isDanger ? 1.0 : (profile.windVolumeRange[0] + profile.windVolumeRange[1]) / 2;
 
       await windSound.setIsLoopingAsync(true);
-      await windSound.setVolumeAsync(0.5);
+      await windSound.setVolumeAsync(initialWindVol).catch(() => {});
+      await windSound.setPositionAsync(Math.floor(Math.random() * 3000)).catch(() => {});
       await windSound.playAsync();
 
       pinFile(wFile);
       activeFiles.add(wFile);
       activeSounds.push(windSound);
 
-      // Volume envelope interval (fluctuates volume every 500-1000ms simulating wind gusts)
+      // Volume envelope interval (fluctuates volume simulating wind gusts according to category profile)
       if (currentRequestId === activePlaybackRequestId) {
+        const [minVol, maxVol] = profile.windVolumeRange;
+        const [minInterval, maxInterval] = profile.gustIntervalRange;
+
         const windInterval = setInterval(async () => {
           if (currentRequestId !== activePlaybackRequestId) {
             clearInterval(windInterval);
+            const idx = activeIntervals.indexOf(windInterval);
+            if (idx !== -1) {
+              activeIntervals.splice(idx, 1);
+            }
             return;
           }
           try {
             if (windSound) {
-              const gustVol = isDanger ? (0.8 + Math.random() * 0.2) : (0.3 + Math.random() * 0.5);
+              const gustVol = isDanger 
+                ? (0.9 + Math.random() * 0.1) 
+                : (minVol + Math.random() * (maxVol - minVol));
               await windSound.setVolumeAsync(gustVol);
             }
           } catch {
             // ignore error if sound was unloaded
           }
-        }, isDanger ? (200 + Math.floor(Math.random() * 200)) : (500 + Math.floor(Math.random() * 500)));
+        }, isDanger ? (100 + Math.floor(Math.random() * 150)) : (minInterval + Math.floor(Math.random() * (maxInterval - minInterval))));
+
         activeIntervals.push(windInterval);
       }
     }
 
-    console.log(`[Audio Engine] [Req #${currentRequestId}] Organic dynamic mix active with ambient (${ambientFiles.join(', ')}) + wind (${windFile}).`);
+    console.log(`[Audio Engine] [Req #${currentRequestId}] Dynamic mix active for '${categoryKey}' with ambient (${ambientFiles.length} tracks) + wind (${windResults.length} tracks).`);
 
   } catch (err) {
     console.error(`[Audio Engine] [Req #${currentRequestId}] Dynamic mix execution failed:`, err);

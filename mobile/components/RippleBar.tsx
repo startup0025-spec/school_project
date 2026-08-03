@@ -24,6 +24,7 @@ export function RippleBar({ mode, rawSpeedMps }: RippleBarProps) {
   let activeIntensity = 0.12;
   if (rawSpeedMps !== undefined) {
     activeIntensity = Math.max(0.05, Math.min(1.2, 0.12 + (rawSpeedMps / 4.0) * 0.73));
+    activeIntensity = Math.round(activeIntensity * 10) / 10;
   } else {
     if (mode === 'walking') activeIntensity = 0.48;
     else if (mode === 'busy') activeIntensity = 0.85;
@@ -40,7 +41,7 @@ export function RippleBar({ mode, rawSpeedMps }: RippleBarProps) {
       -1,
       false,
     );
-  }, [mode, activeIntensity]);
+  }, [mode, activeIntensity, progress]);
 
   const animatedProps = useAnimatedProps(() => {
     const t = progress.value * Math.PI * 2;

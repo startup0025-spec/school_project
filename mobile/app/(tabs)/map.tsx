@@ -2,10 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Image, Pressable, Linking, Modal, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import * as Location from 'expo-location';
 
-let WebView: any = null;
-if (Platform.OS !== 'web') {
-  WebView = require('react-native-webview').WebView;
-}
+import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -23,6 +20,10 @@ import {
   sortPlacesByDistance,
   isValidCoordinate,
 } from '@/core_engine/src/utils/haversine';
+import {
+  calculateDynamicMarkerScale,
+  clipRouteSegment,
+} from '@/core_engine/src/utils/gis_spatial';
 
 // Inline HTML layout with Kakao Map event handlers, grayscale theme, and message bridge
 const KAKAO_MAP_HTML = `
@@ -181,9 +182,14 @@ const KAKAO_MAP_HTML = `
 
     function initializeMap() {
       var container = document.getElementById('map');
+      // Use first spot as initial center if available
+      var initialCenter = new kakao.maps.LatLng(35.1978, 129.0837);
+      if (typeof window.initialSpot !== 'undefined' && window.initialSpot) {
+        initialCenter = new kakao.maps.LatLng(window.initialSpot.latitude, window.initialSpot.longitude);
+      }
       var options = {
-        center: new kakao.maps.LatLng(35.1978, 129.0837), // Sebyeonggyo (Center coordinates)
-        level: 5
+        center: initialCenter,
+        level: 3
       };
       
       map = new kakao.maps.Map(container, options);
@@ -232,6 +238,36 @@ const KAKAO_MAP_HTML = `
       }
     };
 
+    var routePolylineOverlays = [];
+    window.drawSegments = function(segments) {
+      if (!map) return;
+      
+      routePolylineOverlays.forEach(function(overlay) { overlay.setMap(null); });
+      routePolylineOverlays = [];
+      
+      if (!segments || !Array.isArray(segments)) return;
+
+      segments.forEach(function(seg) {
+        if (!seg.coordinates || seg.coordinates.length < 2) return;
+        var path = seg.coordinates.map(function(coord) {
+          return new kakao.maps.LatLng(coord[1], coord[0]);
+        });
+        
+        var color = seg.isCovered ? '#FFB3B3' : '#B3D9FF';
+        var opacity = seg.isCovered ? 0.5 : 0.8;
+        
+        var polyline = new kakao.maps.Polyline({
+          path: path,
+          strokeWeight: 5,
+          strokeColor: color,
+          strokeOpacity: opacity,
+          strokeStyle: seg.isCovered ? 'shortdash' : 'solid'
+        });
+        polyline.setMap(map);
+        routePolylineOverlays.push(polyline);
+      });
+    };
+
     window.updateSpots = function(spots, activeSpotId) {
       if (!map) return;
       if (!spots || !Array.isArray(spots)) return;
@@ -241,13 +277,18 @@ const KAKAO_MAP_HTML = `
       spots.forEach(function(spot) {
         var latLon = new kakao.maps.LatLng(spot.latitude, spot.longitude);
         var isActive = (activeSpotId === spot.id);
+        var scale = spot.scale || 1.0;
+        var baseW = 24, baseH = 35;
+        var w = Math.round(baseW * scale);
+        var h = Math.round(baseH * scale);
+        var offsetX = Math.round(w / 2);
         
-        var imageSize = new kakao.maps.Size(24, 35);
-        var imageOption = { offset: new kakao.maps.Point(12, 35) };
+        var imageSize = new kakao.maps.Size(w, h);
+        var imageOption = { offset: new kakao.maps.Point(offsetX, h) };
         var svgStr = isActive 
-          ? '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="35" viewBox="0 0 24 35"><path fill="%23007AFF" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 23 12 23s12-14 12-23c0-6.6-5.4-12-12-12zm0 17c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>'
-          : '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="35" viewBox="0 0 24 35"><path fill="%2394a3b8" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 23 12 23s12-14 12-23c0-6.6-5.4-12-12-12zm0 17c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>';
-        var markerImage = new kakao.maps.MarkerImage('data:image/svg+xml;charset=UTF-8,' + svgStr, imageSize, imageOption);
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 24 35"><path fill="%23007AFF" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 23 12 23s12-14 12-23c0-6.6-5.4-12-12-12zm0 17c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 24 35"><path fill="%2394a3b8" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 23 12 23s12-14 12-23c0-6.6-5.4-12-12-12zm0 17c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>';
+        var markerImage = new kakao.maps.MarkerImage('data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgStr), imageSize, imageOption);
 
         if (markers[spot.id]) {
           // Update existing marker to avoid flickering
@@ -275,7 +316,7 @@ const KAKAO_MAP_HTML = `
       // Clear removed markers safely with instance listener cleanup
       for (var id in markers) {
         if (Object.prototype.hasOwnProperty.call(markers, id)) {
-          if (markers[id]) {
+          if (markers[id] && !newMarkers[id]) {
             kakao.maps.event.clearInstanceListeners(markers[id]);
             markers[id].setMap(null);
           }
@@ -299,25 +340,26 @@ const KAKAO_MAP_HTML = `
 
 // Calculate walk time dynamically or fallback
 const getWalkTime = (place: Place, userCoords?: { latitude: number; longitude: number } | null): string => {
+  const placeRecord = place as unknown as Record<string, unknown>;
   if (userCoords && userCoords.latitude !== null && userCoords.latitude !== undefined && userCoords.longitude !== null && userCoords.longitude !== undefined) {
     const distance = getHaversineDistance(userCoords.latitude, userCoords.longitude, place.latitude, place.longitude);
     if (isNaN(distance)) {
-      if ('walk' in place && typeof (place as any).walk === 'string') {
-        return (place as any).walk;
+      if ('walk' in place && typeof placeRecord.walk === 'string') {
+        return placeRecord.walk;
       }
       return '도보 15분';
     }
     const estimatedActualDistance = distance * 1.35; // Urban routing multiplier
     const minutes = Math.round(estimatedActualDistance / 65); // Realistic walking speed on Busan terrain
     if (isNaN(minutes) || minutes < 0) {
-      if ('walk' in place && typeof (place as any).walk === 'string') {
-        return (place as any).walk;
+      if ('walk' in place && typeof placeRecord.walk === 'string') {
+        return placeRecord.walk;
       }
       return '도보 15분';
     }
     if (minutes > 120) {
-      if ('walk' in place && typeof (place as any).walk === 'string') {
-        return (place as any).walk;
+      if ('walk' in place && typeof placeRecord.walk === 'string') {
+        return placeRecord.walk;
       }
       return '도보 2시간 이상';
     }
@@ -325,8 +367,8 @@ const getWalkTime = (place: Place, userCoords?: { latitude: number; longitude: n
     return `도보 ${minutes}분`;
   }
   
-  if ('walk' in place && typeof (place as any).walk === 'string') {
-    return (place as any).walk;
+  if ('walk' in place && typeof placeRecord.walk === 'string') {
+    return placeRecord.walk;
   }
   return '도보 15분';
 };
@@ -342,9 +384,23 @@ export default function MapScreen() {
   const [index, setIndex] = useState(0);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isSdkFailed, setIsSdkFailed] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number; altitude?: number } | null>(null);
   const [diaryModalVisible, setDiaryModalVisible] = useState(false);
   const [diaryText, setDiaryText] = useState('');
+  const [customNames, setCustomNames] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    AsyncStorage.getItem('@anywayTheSea:custom_names').then(str => {
+      if (str) setCustomNames(JSON.parse(str));
+    }).catch(() => {});
+  }, []);
+
+  const handleNameChange = (text: string) => {
+    if (!currentPlace) return;
+    const newNames = { ...customNames, [currentPlace.id]: text };
+    setCustomNames(newNames);
+    AsyncStorage.setItem('@anywayTheSea:custom_names', JSON.stringify(newNames)).catch(() => {});
+  };
 
   const SORT_COOLDOWN_MS = 180000;
   const lastSortTimeRef = useRef<number>(0);
@@ -352,7 +408,7 @@ export default function MapScreen() {
   indexRef.current = index;
   const placesRef = useRef<Place[]>(places);
   placesRef.current = places;
-  const userLocationRef = useRef<{ latitude: number; longitude: number } | null>(userLocation);
+  const userLocationRef = useRef<{ latitude: number; longitude: number; altitude?: number } | null>(userLocation);
   userLocationRef.current = userLocation;
 
   // 1. Initial Places Cache Fetch & Background Location Read (R1, R2)
@@ -370,12 +426,13 @@ export default function MapScreen() {
             storedState?.lastLongitude != null &&
             isValidCoordinate(storedState.lastLatitude, storedState.lastLongitude)
           ) {
-            const { lastLatitude, lastLongitude } = storedState;
-            setUserLocation({ latitude: lastLatitude, longitude: lastLongitude });
+            const { lastLatitude, lastLongitude, lastAltitude } = storedState;
+            setUserLocation({ latitude: lastLatitude, longitude: lastLongitude, altitude: lastAltitude || 0 });
 
             const sortedPlaces = sortPlacesByDistance(initialPlaces, {
               latitude: lastLatitude,
               longitude: lastLongitude,
+              altitude: lastAltitude || 0,
             });
 
             setPlaces(sortedPlaces);
@@ -427,79 +484,104 @@ export default function MapScreen() {
     let subscription: Location.LocationSubscription | null = null;
 
     async function startWatching() {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted' || !active) return;
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted' || !active) return;
 
-      const sub = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.Balanced,
-          timeInterval: 10000,
-          distanceInterval: 10,
-        },
-        (loc) => {
-          if (!active) return;
-          const { latitude, longitude } = loc.coords;
-          setUserLocation({ latitude, longitude });
+        const sub = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.Balanced,
+            timeInterval: 10000,
+            distanceInterval: 10,
+          },
+          (loc) => {
+            if (!active) return;
+            const { latitude, longitude, altitude } = loc.coords;
+            setUserLocation({ latitude, longitude, altitude: altitude || 0 });
 
-          const injectScript = `if(window.updateUserLocation){window.updateUserLocation(${latitude},${longitude});};true;`;
-          webViewRef.current?.injectJavaScript(injectScript);
+            const injectScript = `if(window.updateUserLocation){window.updateUserLocation(${latitude},${longitude});};true;`;
+            webViewRef.current?.injectJavaScript(injectScript);
 
-          // R3: 3-minute cooldown re-sorting & safe activeIndex preservation
-          const now = Date.now();
-          if (lastSortTimeRef.current === 0 || now - lastSortTimeRef.current >= SORT_COOLDOWN_MS) {
-            const currentPlaces = placesRef.current;
-            if (currentPlaces && currentPlaces.length > 0) {
-              const currentSelectedId = currentPlaces[indexRef.current]?.id;
-              const sorted = sortPlacesByDistance(currentPlaces, { latitude, longitude });
-              const newIdx = currentSelectedId ? sorted.findIndex((p) => p.id === currentSelectedId) : -1;
+            // R3: 3-minute cooldown re-sorting & safe activeIndex preservation
+            const now = Date.now();
+            if (lastSortTimeRef.current === 0 || now - lastSortTimeRef.current >= SORT_COOLDOWN_MS) {
+              const currentPlaces = placesRef.current;
+              if (currentPlaces && currentPlaces.length > 0) {
+                const currentSelectedId = currentPlaces[indexRef.current]?.id;
+                const sorted = sortPlacesByDistance(currentPlaces, { latitude, longitude, altitude: altitude || 0 });
+                const newIdx = currentSelectedId ? sorted.findIndex((p) => p.id === currentSelectedId) : -1;
 
-              setPlaces(sorted);
-              setIndex(newIdx !== -1 ? newIdx : 0);
-              lastSortTimeRef.current = now;
+                setPlaces(sorted);
+                setIndex(newIdx !== -1 ? newIdx : 0);
+                lastSortTimeRef.current = now;
+              }
             }
           }
-        }
-      );
+        );
 
-      if (!active) {
-        sub.remove();
-      } else {
-        subscription = sub;
+        if (!active) {
+          sub.remove();
+        } else {
+          subscription = sub;
+        }
+      } catch (err) {
+        if (active) {
+          console.warn('[MapScreen] Location watcher start error:', err);
+        }
       }
     }
 
-    startWatching();
+    startWatching().catch((err) => {
+      if (active) {
+        console.warn('[MapScreen] Unhandled startWatching promise error:', err);
+      }
+    });
 
     return () => {
       active = false;
       if (subscription) {
         subscription.remove();
+        subscription = null;
       }
     };
   }, [isFocused]);
 
-  // 4. Synchronize Spot Markers with WebView (Direct JS Object stringification)
+  // 4. Synchronize Spot Markers with WebView (Scale-augmented & GIS spatial route clipping)
   useEffect(() => {
-    if (isMapReady && !isSdkFailed && places.length > 0) {
-      const spotsData = places.map((s) => ({
-        id: s.id,
-        name: s.name,
-        latitude: s.latitude,
-        longitude: s.longitude,
-      }));
-      const activeSpotId = currentPlace?.id || null;
-      const injectScript = `if(window.updateSpots){window.updateSpots(${JSON.stringify(spotsData)}, ${JSON.stringify(activeSpotId)});};true;`;
+    if (isMapReady && !isSdkFailed && places.length > 0 && currentPlace) {
+      const zoomLevel = 5;
+      const altitude = userLocation?.altitude || 0;
+      
+      // ONLY PASS THE TOP 1 MARKER (currentPlace) to enforce 1:1 curation!
+      const spotsData = [{
+        id: currentPlace.id,
+        name: currentPlace.name,
+        latitude: currentPlace.latitude,
+        longitude: currentPlace.longitude,
+        scale: calculateDynamicMarkerScale(zoomLevel, altitude),
+      }];
+      
+      const activeSpotId = currentPlace.id;
+      let injectScript = `if(window.updateSpots){window.updateSpots(${JSON.stringify(spotsData)}, ${JSON.stringify(activeSpotId)});};`;
+
+      const recordPlace = currentPlace as unknown as Record<string, unknown>;
+      // Polyline drawing disabled as requested by the user
+      // if (recordPlace.geojsonSegments && Array.isArray(recordPlace.geojsonSegments)) {
+      //   injectScript += `if(window.drawSegments){window.drawSegments(${JSON.stringify(recordPlace.geojsonSegments)});};`;
+      // }
+      
+      injectScript += `true;`;
       webViewRef.current?.injectJavaScript(injectScript);
     }
-  }, [isMapReady, isSdkFailed, places, activeIndex]);
+  }, [isMapReady, isSdkFailed, places, activeIndex, userLocation, currentPlace]);
 
   // 5. Camera Viewport Focusing on activeIndex/isMapReady/isSdkFailed change (Interaction-Aware)
   useEffect(() => {
     if (isMapReady && !isSdkFailed && currentPlace) {
-      const injectScript = `if(window.focusSpot){window.focusSpot(${currentPlace.latitude},${currentPlace.longitude},5);};true;`;
+      const injectScript = `if(window.focusSpot){window.focusSpot(${currentPlace.latitude},${currentPlace.longitude},3);};true;`;
       webViewRef.current?.injectJavaScript(injectScript);
     }
-  }, [activeIndex, isMapReady, isSdkFailed, places]);
+  }, [activeIndex, isMapReady, isSdkFailed, places, currentPlace]);
 
   // 6. Focus State Sync with Web Context & Relayout on focus to restore WebGL/Canvas state
   useEffect(() => {
@@ -512,7 +594,7 @@ export default function MapScreen() {
   }, [isFocused, isMapReady]);
 
   // 7. WebView Event Bridge Message Handler
-  const handleMessage = (event: any) => {
+  const handleMessage = (event: { nativeEvent: { data: string } }) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
       switch (message.type) {
@@ -520,24 +602,27 @@ export default function MapScreen() {
           setIsMapReady(true);
           setIsSdkFailed(false);
           break;
-        case 'SPOT_SELECTED':
+        case 'SPOT_SELECTED': {
           const foundIdx = places.findIndex((p) => p.id === message.payload.id);
           if (foundIdx !== -1) {
             Haptics.selectionAsync();
             setIndex(foundIdx);
           }
           break;
+        }
         case 'SDK_LOAD_FAILED':
           setIsSdkFailed(true);
           break;
         case 'WEB_ERROR':
           console.error(`[WebView Exception] ${message.payload.message} at ${message.payload.source}:${message.payload.line}`);
           break;
-        case 'CONSOLE_LOG':
+        case 'CONSOLE_LOG': {
           const { level, message: logMsg } = message.payload;
-          const logFn = (console as any)[level] || console.log;
+          const consoleObj = console as unknown as Record<string, (...args: unknown[]) => void>;
+          const logFn = consoleObj[level] || console.log;
           logFn(`[WebView Console] ${logMsg}`);
           break;
+        }
         case 'MAP_CLICKED':
           // Optional: handle map background clicks
           break;
@@ -549,13 +634,15 @@ export default function MapScreen() {
 
   const handleDeepLink = async () => {
     if (!currentPlace) return;
-    const { name, latitude, longitude } = currentPlace;
-    const urlEncodedName = encodeURIComponent(name);
+    const { latitude, longitude } = currentPlace;
+    // User requested to use a custom place name
+    const displayName = customNames[currentPlace.id] || '나만의 장소';
+    const urlEncodedName = encodeURIComponent(displayName);
     const webFallbackUrl = `https://map.kakao.com/link/to/${urlEncodedName},${latitude},${longitude}`;
 
     const schemeUrl = Platform.select({
       ios: `maps:0,0?q=${urlEncodedName}&ll=${latitude},${longitude}`,
-      android: `geo:0,0?q=${latitude},${longitude}(${urlEncodedName})`,
+      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${urlEncodedName})`,
     });
 
     try {
@@ -617,14 +704,14 @@ export default function MapScreen() {
           {Platform.OS === 'web' ? (
             <iframe
               srcDoc={htmlContent}
-              style={{ width: '100%', height: '100%', border: 'none' } as any}
+              style={{ width: '100%', height: '100%', border: 'none' } as unknown as React.CSSProperties}
               title="Kakao Map"
             />
           ) : (
             WebView && (
               <WebView
                 ref={webViewRef}
-                source={{ html: htmlContent, baseUrl: 'https://startup0025-spec.github.io' }}
+                source={{ html: htmlContent, baseUrl: 'http://localhost' }}
                 originWhitelist={['*']}
                 mixedContentMode="always"
                 allowFileAccess={true}
@@ -665,7 +752,14 @@ export default function MapScreen() {
           <Text style={[styles.hint, { color: colors.mutedForeground }]}>
             점심시간이 지나고 가장 한가한 시간에 딱 한 곳만 추천드려요.
           </Text>
-        <Text style={[styles.spotName, { color: colors.foreground }]}>{currentPlace.name}</Text>
+        <TextInput 
+          style={[styles.spotName, { color: colors.foreground, borderBottomWidth: 1, borderBottomColor: colors.border, padding: 0, margin: 0 }]}
+          value={customNames[currentPlace.id] || ''}
+          placeholder="여기에 나만의 이름을 지어주세요"
+          placeholderTextColor={colors.mutedForeground}
+          onChangeText={handleNameChange}
+          maxLength={30}
+        />
         <Text style={[styles.spotNote, { color: colors.mutedForeground }]}>{currentPlace.description}</Text>
         <View style={styles.spotFooter}>
           <View style={[styles.tag, { backgroundColor: colors.secondary }]}>
@@ -706,7 +800,7 @@ export default function MapScreen() {
           style={styles.modalOverlay}
         >
           <View style={[styles.modalContent, { backgroundColor: colors.background, borderColor: colors.border }]}>
-            <Text style={[styles.modalTitle, { color: colors.foreground }]}>{currentPlace?.name}에서의 기록</Text>
+            <Text style={[styles.modalTitle, { color: colors.foreground }]}>{customNames[currentPlace.id] || '나만의 장소'}에서의 기록</Text>
             <TextInput
               style={[styles.diaryInput, { color: colors.foreground, borderColor: colors.border }]}
               placeholder="이곳에서의 감상을 남겨보세요..."

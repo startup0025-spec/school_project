@@ -25,6 +25,7 @@ export interface TrackingState {
   lastLongitude: number | null;
   lastTimestamp: number | null;
   lastDistance: number;
+  smoothedSpeed: number;
 }
 
 const INITIAL_STATE: TrackingState = {
@@ -36,6 +37,7 @@ const INITIAL_STATE: TrackingState = {
   lastLongitude: null,
   lastTimestamp: null,
   lastDistance: 999999,
+  smoothedSpeed: 0,
 };
 
 // Static promise queue to prevent concurrency race conditions in AsyncStorage
@@ -63,8 +65,98 @@ function getHaversineDistance(
       Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const clampedA = Math.min(1, Math.max(0, a));
+  const c = 2 * Math.asin(Math.sqrt(clampedA));
   return R * c;
+}
+
+/**
+ * Priority override rank for water categories:
+ * 1: 연안 (Coastline / Sea) - Highest
+ * 2: 국가하천 (National River)
+ * 3: 호소 (Lake / Reservoir)
+ * 4: 지방하천 (Local River)
+ * 5: 세천 (Ditch)
+ * 6: Default / Unclassified
+ */
+export function getCategoryPriority(place: Place): number {
+  if (typeof place.priority === 'number' && place.priority >= 1 && place.priority <= 6) {
+    return place.priority;
+  }
+  const cat = (place.waterCategory || (place as unknown as Record<string, string>).category || '').trim();
+  if (cat.includes('연안') || place.waterType === 'sea') return 1;
+  if (cat.includes('국가하천')) return 2;
+  if (cat.includes('호소')) return 3;
+  if (cat.includes('지방하천')) return 4;
+  if (cat.includes('세천') || place.waterType === 'stream') return 5;
+  return 6;
+}
+
+const CATEGORY_WEIGHTS: Record<number, number> = {
+  1: 0.2, // 연안 (Coastline / Sea)
+  2: 0.4, // 국가하천 (National River)
+  3: 0.6, // 호소 (Lake / Reservoir)
+  4: 0.8, // 지방하천 (Local River)
+  5: 1.0, // 세천 (Ditch)
+  6: 1.2, // Default
+};
+
+/**
+ * Finds the optimal target place applying distance weight priority override:
+ * 연안 > 국가하천 > 호소 > 지방하천 > 세천.
+ * When multiple water places are within range, higher priority categories override lower priority categories.
+ */
+export function findOptimalTargetPlace(
+  places: Place[],
+  latitude: number,
+  longitude: number
+): { place: Place | null; distance: number } {
+  if (!places || places.length === 0) return { place: null, distance: Infinity };
+
+  let bestPlace: Place | null = null;
+  let bestRealDistance = Infinity;
+
+  for (const place of places) {
+    const dist = getHaversineDistance(latitude, longitude, place.latitude, place.longitude);
+    const priority = getCategoryPriority(place);
+
+    if (!bestPlace) {
+      bestPlace = place;
+      bestRealDistance = dist;
+      continue;
+    }
+
+    const currentPriority = getCategoryPriority(bestPlace);
+    const candidateInRange = dist <= place.geofenceRadius;
+    const currentBestInRange = bestRealDistance <= bestPlace.geofenceRadius;
+
+    // Rule 1: Candidate is in range while current best is not
+    if (candidateInRange && !currentBestInRange) {
+      bestPlace = place;
+      bestRealDistance = dist;
+    }
+    // Rule 2: Both candidate and current best are in range
+    // Higher priority category (lower priority rank number) overrides lower priority category
+    else if (candidateInRange && currentBestInRange) {
+      if (priority < currentPriority) {
+        bestPlace = place;
+        bestRealDistance = dist;
+      } else if (priority === currentPriority && dist < bestRealDistance) {
+        bestPlace = place;
+        bestRealDistance = dist;
+      }
+    }
+    // Rule 3: Neither candidate nor current best are in geofence range
+    // Compare physical distance only
+    else if (!candidateInRange && !currentBestInRange) {
+      if (dist < bestRealDistance) {
+        bestPlace = place;
+        bestRealDistance = dist;
+      }
+    }
+  }
+
+  return { place: bestPlace, distance: bestRealDistance };
 }
 
 /**
@@ -243,9 +335,21 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
     }
   }
 
-  // 3. Classify Speed
-  const currentSpeed = speed !== null && speed >= 0 ? speed : 0;
-  const speedClass = classifySpeed(currentSpeed);
+  // 3. Classify Speed with EMA Filter and Accuracy Throttling
+  let currentSpeed = speed !== null && speed >= 0 ? speed : 0;
+  
+  // Throttle speed to 0 if accuracy is poor (typical GPS drift while stationary indoors)
+  if (accuracy && accuracy > 20) {
+    currentSpeed = 0;
+  }
+  
+  // Exponential Moving Average (EMA) to smooth out sudden speed spikes
+  const ALPHA = 0.3; // Weight of new speed vs old speed
+  const prevSpeed = state.smoothedSpeed !== undefined ? state.smoothedSpeed : 0;
+  const smoothedSpeed = (ALPHA * currentSpeed) + ((1 - ALPHA) * prevSpeed);
+  state.smoothedSpeed = smoothedSpeed;
+
+  const speedClass = classifySpeed(smoothedSpeed);
 
   // 4. Resolve Active Target Place with Lock Mechanism
   let targetPlace: Place | null = null;
@@ -275,34 +379,19 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
   }
 
   if (state.activePlaceId === null) {
-    // Lock Inactive: Query all places and identify closest
+    // Lock Inactive: Query all places and identify target place applying distance weight priority override
     const places = await getPlaces();
     
-    /* [SWITCH OFF] 
-    try {
-      // Dynamically fetch TourAPI beaches and merge them. The geofence radius defaults to 1km.
-      const { fetchNearbyBeaches } = require('../../core_engine/src/network/tour_api');
-      const beaches = await fetchNearbyBeaches(latitude, longitude, 10000); // 10km radius search
-      places.push(...beaches);
-    } catch (e) {
-      console.warn('[BG Geofencing] Failed to fetch TourAPI beaches', e);
-    }
-    */
-
     if (places.length === 0) return;
 
-    for (const place of places) {
-      const dist = getHaversineDistance(
-        latitude,
-        longitude,
-        place.latitude,
-        place.longitude
-      );
-      if (dist < calculatedDistance) {
-        calculatedDistance = dist;
-        targetPlace = place;
-      }
-    }
+    const { place: bestTarget, distance: bestDist } = findOptimalTargetPlace(
+      places,
+      latitude,
+      longitude
+    );
+
+    targetPlace = bestTarget;
+    calculatedDistance = bestDist;
   }
 
   if (!targetPlace) return;
@@ -385,9 +474,9 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
       state.configKey = configKey;
       // Clear any historic permission errors since updates succeeded
       await AsyncStorage.removeItem(STORAGE_PERMISSION_ERR_KEY);
-    } catch (updateErr: any) {
+    } catch (updateErr: unknown) {
       console.error('[BG Geofencing] Failed to dynamically update tracking options:', updateErr);
-      if (updateErr.message?.includes('permission') || updateErr.message?.includes('denied')) {
+      if ((updateErr as Error)?.message?.includes('permission') || (updateErr as Error)?.message?.includes('denied')) {
         await AsyncStorage.setItem(
           STORAGE_PERMISSION_ERR_KEY,
           JSON.stringify({ error: 'PERMISSION_REVOKED', timestamp: Date.now() })
@@ -408,28 +497,29 @@ async function processLocationUpdate(locations: Location.LocationObject[]): Prom
     isTracking: true, 
     state,
     waterType: targetPlace.waterType,
-    rawSpeedMps: currentSpeed
+    rawSpeedMps: smoothedSpeed
   });
 }
 
 // Register background task using TaskManager
-TaskManager.defineTask(LOCATION_TRACKING_TASK, async ({ data, error }: { data: any; error: any }) => {
+TaskManager.defineTask(LOCATION_TRACKING_TASK, async ({ data, error }: { data: unknown; error: unknown }) => {
   if (error) {
-    console.error(`[BG Task Callback] TaskManager received error: ${error.message}`);
+    console.error(`[BG Task Callback] TaskManager received error: ${(error as Error)?.message}`);
     return;
   }
 
-  const locations = (data as any)?.locations as Location.LocationObject[];
+  const locations = (data as { locations?: Location.LocationObject[] })?.locations;
   if (!locations || locations.length === 0) return;
 
   // Queue background update tasks sequentially to prevent AsyncStorage race conditions
-  taskQueue = taskQueue.then(async () => {
+  const nextTask = taskQueue.then(async () => {
     try {
       await processLocationUpdate(locations);
     } catch (queueErr) {
       console.error('[BG Task Callback] Fatal error in queued processing:', queueErr);
     }
-  });
+  }).catch(() => {});
+  taskQueue = nextTask;
 
   await taskQueue;
 });
@@ -442,12 +532,28 @@ TaskManager.defineTask(LOCATION_TRACKING_TASK, async ({ data, error }: { data: a
  * Initiates the background geofencing tracking service.
  */
 export async function startAdaptiveTracking(): Promise<void> {
-  const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
+  let foregroundStatus: string = 'denied';
+  try {
+    const fgRes = await Location.requestForegroundPermissionsAsync();
+    foregroundStatus = fgRes.status;
+  } catch (fgErr: unknown) {
+    console.warn('[Geofencing Service] Foreground location permission request error:', fgErr);
+    throw new Error('Foreground location permission is required.');
+  }
+
   if (foregroundStatus !== 'granted') {
     throw new Error('Foreground location permission is required.');
   }
 
-  const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
+  let backgroundStatus: string = 'denied';
+  try {
+    const bgRes = await Location.requestBackgroundPermissionsAsync();
+    backgroundStatus = bgRes.status;
+  } catch (bgErr: unknown) {
+    console.warn('[Geofencing Service] Background location permission request error/denied:', bgErr);
+    throw new Error('Background location permission (Always Allow) is required.');
+  }
+
   if (backgroundStatus !== 'granted') {
     throw new Error('Background location permission (Always Allow) is required.');
   }
@@ -458,7 +564,7 @@ export async function startAdaptiveTracking(): Promise<void> {
 
   // Initialize in FAR/STATIONARY state configuration
   const initialOptions = getQuantizedOptions('FAR', 'STATIONARY');
-  const { configKey, ...expoOptions } = initialOptions;
+  const { configKey: _configKey, ...expoOptions } = initialOptions;
 
   await Location.startLocationUpdatesAsync(LOCATION_TRACKING_TASK, {
     ...expoOptions,
@@ -475,7 +581,7 @@ export async function startAdaptiveTracking(): Promise<void> {
 export async function stopAdaptiveTracking(): Promise<void> {
   const isRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TRACKING_TASK);
   if (isRegistered) {
-    taskQueue = taskQueue.then(async () => {
+    const nextTask = taskQueue.then(async () => {
       try {
         await Location.stopLocationUpdatesAsync(LOCATION_TRACKING_TASK);
         await stopAmbientSound();
@@ -486,7 +592,8 @@ export async function stopAdaptiveTracking(): Promise<void> {
       } catch (err) {
         console.error('[Geofencing Service] Error stopping tracking:', err);
       }
-    });
+    }).catch(() => {});
+    taskQueue = nextTask;
     await taskQueue;
   }
 }

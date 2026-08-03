@@ -45,6 +45,7 @@ export function RippleOrb({ mode, size = 240, rawSpeedMps }: RippleOrbProps) {
     // 1.5 m/s -> ~0.48 (walking)
     // 4.0 m/s -> ~0.85 (busy)
     activeIntensity = Math.max(0.05, Math.min(1.2, 0.12 + (rawSpeedMps / 4.0) * 0.73));
+    activeIntensity = Math.round(activeIntensity * 10) / 10;
   }
 
   const progress = useSharedValue(0);

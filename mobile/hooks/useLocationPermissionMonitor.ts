@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -8,6 +8,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * @param onRevoked Callback to execute when a permission revocation is detected (e.g., showing a UI banner).
  */
 export function useLocationPermissionMonitor(onRevoked: () => void) {
+  const onRevokedRef = useRef(onRevoked);
+  
+  useEffect(() => {
+    onRevokedRef.current = onRevoked;
+  }, [onRevoked]);
+
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
       // Only check when the app comes into the foreground
@@ -17,7 +23,7 @@ export function useLocationPermissionMonitor(onRevoked: () => void) {
           if (errorRaw) {
             const parsed = JSON.parse(errorRaw);
             if (parsed.error === 'PERMISSION_REVOKED') {
-              onRevoked();
+              onRevokedRef.current();
               
               // Clear the error so we don't repeatedly fire the callback
               // unless the background task logs it again.
@@ -32,5 +38,5 @@ export function useLocationPermissionMonitor(onRevoked: () => void) {
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription.remove();
-  }, [onRevoked]);
+  }, []);
 }

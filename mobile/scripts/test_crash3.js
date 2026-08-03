@@ -23,7 +23,7 @@ setTimeout(() => {
         }
         
         console.log('Uninstalling old app...');
-        try { execSync(`"${adb}" uninstall ${pkg}`); } catch(e){}
+        try { execSync(`"${adb}" uninstall ${pkg}`); } catch(e){ /* ignore uninstall error */ }
         
         console.log('Installing APK...');
         execSync(`"${adb}" install -r "${apkPath}"`);

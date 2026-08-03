@@ -148,6 +148,7 @@ export async function initMediaSession(): Promise<void> {
       notificationCapabilities: [
         Capability.Play,
         Capability.Pause,
+        Capability.Stop,
       ],
     });
 
@@ -173,7 +174,7 @@ export async function initMediaSession(): Promise<void> {
   }
 }
 
-export async function updateMediaPlaybackState(state: 'playing' | 'paused' | 'none'): Promise<void> {
+export async function updateMediaPlaybackState(state: 'playing' | 'paused' | 'stopped' | 'none'): Promise<void> {
   const g = globalThis as unknown as GlobalWithNav;
   if (g.navigator?.mediaSession) {
     g.navigator.mediaSession.playbackState = state;
@@ -182,8 +183,10 @@ export async function updateMediaPlaybackState(state: 'playing' | 'paused' | 'no
   try {
     if (state === 'playing') {
       await TrackPlayer.play();
-    } else {
+    } else if (state === 'paused') {
       await TrackPlayer.pause();
+    } else if (state === 'stopped') {
+      await TrackPlayer.stop();
     }
   } catch (err) {
     console.warn('[TrackPlayer] Failed to update playbackState:', err);

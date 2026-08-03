@@ -57,7 +57,9 @@ export const offlineStorage = buildStorage({
   remove: async (key: string) => {
     try {
       await AsyncStorage.removeItem(`api_cache:${key}`);
-    } catch {}
+    } catch {
+      /* ignore cache removal error */
+    }
   }
 });
 

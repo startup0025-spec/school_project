@@ -78,10 +78,20 @@ describe('R2: Auto-Indicator UI Transformation Mode Logic', () => {
   });
 });
 
+type MediaSessionNav = {
+  navigator?: {
+    mediaSession?: {
+      metadata: { title: string; artist: string; artwork: Array<{ src: string }> };
+      playbackState: string;
+      _triggerAction: (act: string) => Promise<void>;
+    };
+  };
+};
+
 describe('R3: Native Media Session & Lockscreen Controls', () => {
   test('initMediaSession registers MediaSession metadata with artwork', () => {
     initMediaSession();
-    const nav = (globalThis as any).navigator;
+    const nav = (globalThis as unknown as Required<MediaSessionNav>).navigator;
     assert.ok(nav?.mediaSession, 'MediaSession should be initialized on navigator');
 
     const metadata = nav.mediaSession.metadata;
@@ -122,7 +132,7 @@ describe('R3: Native Media Session & Lockscreen Controls', () => {
     );
 
     initMediaSession();
-    const nav = (globalThis as any).navigator;
+    const nav = (globalThis as unknown as Required<MediaSessionNav>).navigator;
     assert.ok(nav?.mediaSession?._triggerAction, 'Trigger action helper should exist');
 
     // Trigger Pause action from lockscreen controller

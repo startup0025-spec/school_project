@@ -1,8 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Place } from '../models/place_model';
+import bundledVWorld from '../../../assets/data/vworld_places.json';
 
-const CACHE_KEY = '@anywayTheSea:places_cache';
-const CDN_URL = 'https://startup0025-spec.github.io/school_project/data/busan_places_master.json';
+const CACHE_KEY = '@anywayTheSea:vworld_places_cache_v2';
+const CDN_URLS = [
+  'https://raw.githubusercontent.com/startup0025-spec/school_project/main/vworld_places.json',
+  'https://startup0025-spec.github.io/school_project/data/vworld_places.json',
+];
 
 let isRevalidating = false;
 let lastFetchTime = 0;
@@ -16,6 +20,9 @@ const listeners = new Set<CacheUpdateListener>();
  * Returns an unsubscribe callback function.
  */
 export const subscribeToPlacesCache = (listener: CacheUpdateListener): (() => void) => {
+  if (typeof listener !== 'function') {
+    return () => {};
+  }
   if (listeners.size >= 15) {
     console.warn(`[local_places] Warning: Cache update listeners size (${listeners.size}) exceeds 15. This might indicate a memory leak.`);
   }
@@ -23,6 +30,10 @@ export const subscribeToPlacesCache = (listener: CacheUpdateListener): (() => vo
   return () => {
     listeners.delete(listener);
   };
+};
+
+export const clearAllPlacesCacheListeners = (): void => {
+  listeners.clear();
 };
 
 const notifyListeners = (places: Place[]) => {
@@ -36,33 +47,35 @@ const notifyListeners = (places: Place[]) => {
 };
 
 async function revalidateData(): Promise<void> {
-  try {
-    const response = await fetch(CDN_URL, {
-      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const json = await response.json();
-    const places: Place[] = json.places;
-
-    // Data Sanitizer (Interceptor) for API errors
-    for (const place of places) {
-      if (place.id === 'p-hakjang') {
-        place.latitude = 35.1328;
-        place.longitude = 128.9897;
+  const allPlaces: Place[] = [];
+  
+  // 1. Fetch VWorld Data Only
+  for (const cdnUrl of CDN_URLS) {
+    try {
+      const res = await fetch(cdnUrl, { headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && Array.isArray(json.places)) {
+          // Verify that this CDN response contains the new geojsonSegments data.
+          // Otherwise, fall back to the bundled data (which is guaranteed to have it).
+          if (json.places.length > 0 && json.places[0].geojsonSegments) {
+            allPlaces.push(...json.places);
+            break; // Stop falling back
+          } else {
+            console.warn('[local_places] CDN data is outdated (missing geojsonSegments). Skipping.');
+          }
+        }
       }
-    }
+    } catch (e) {}
+  }
 
-    if (json && Array.isArray(json.places) && json.places.length > 0) {
-      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(json));
-      console.log(`[local_places] SWR: Cached latest places from CDN (${json.places.length} items).`);
-      notifyListeners(json.places as Place[]);
-    }
-  } catch (error) {
-    console.warn('[local_places] SWR revalidation failed (offline mode):', error);
+  if (allPlaces.length > 0) {
+    const output = { places: allPlaces };
+    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(output));
+    console.log(`[local_places] SWR: Cached ${allPlaces.length} VWorld places from CDN.`);
+    notifyListeners(allPlaces);
+  } else {
+    console.warn('[local_places] SWR revalidation failed for all CDNs (offline mode).');
   }
 }
 
@@ -71,11 +84,14 @@ export const getPlaces = async (): Promise<Place[]> => {
   if (!isRevalidating && now - lastFetchTime > FRESHNESS_THRESHOLD) {
     isRevalidating = true;
     lastFetchTime = now;
-    revalidateData().finally(() => {
-      isRevalidating = false;
-    });
+    revalidateData()
+      .catch((e) => console.warn('[local_places] Background revalidation error:', e))
+      .finally(() => {
+        isRevalidating = false;
+      });
   }
 
+  // Try Async Storage Cache
   try {
     const cachedRaw = await AsyncStorage.getItem(CACHE_KEY);
     if (cachedRaw) {
@@ -88,15 +104,13 @@ export const getPlaces = async (): Promise<Place[]> => {
     console.warn('[local_places] AsyncStorage read error:', error);
   }
 
+  // Fallback to Bundled Data
   try {
-    const bundledData = require('../../../assets/data/busan_places_master.json');
-    if (bundledData && Array.isArray(bundledData.places)) {
-      return bundledData.places as Place[];
+    if (bundledVWorld && Array.isArray((bundledVWorld as { places?: Place[] }).places)) {
+      return (bundledVWorld as { places: Place[] }).places;
     }
-  } catch (error) {
-    console.warn('[local_places] Bundled fallback data error:', error);
-  }
-
+  } catch (e) {}
+  
   return [];
 };
 
@@ -104,4 +118,5 @@ export const getPlaceById = async (id: string): Promise<Place | null> => {
   const places = await getPlaces();
   const place = places.find((p) => p.id === id);
   return place || null;
-}
+};
+

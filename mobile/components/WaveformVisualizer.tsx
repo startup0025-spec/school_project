@@ -30,7 +30,7 @@ export function WaveformVisualizer({
     const duration = mode === 'glitch' ? 650 : mode === 'idle' ? 3200 : 1900;
     progress.value = 0;
     progress.value = withRepeat(withTiming(1, { duration, easing: Easing.linear }), -1, false);
-  }, [mode]);
+  }, [mode, progress]);
 
   return (
     <View style={[styles.row, { height }]}>

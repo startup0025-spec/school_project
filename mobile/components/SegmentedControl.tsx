@@ -30,7 +30,7 @@ export function SegmentedControl<T extends string>({
             key={option.value}
             onPress={() => {
               if (!active) {
-                Haptics.selectionAsync();
+                void Haptics.selectionAsync().catch(() => {});
                 onChange(option.value);
               }
             }}

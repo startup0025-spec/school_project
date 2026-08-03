@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import { useRipple, type SafetyLevel } from '@/context/RippleContext';
+import { useAppMode } from '@/context/AppModeContext';
 import { WaveformVisualizer } from '@/components/WaveformVisualizer';
 import { SegmentedControl } from '@/components/SegmentedControl';
 
@@ -17,6 +18,7 @@ export default function SafetyScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { safetyLevel, setSafetyLevel } = useRipple();
+  const { mode } = useAppMode();
   const danger = safetyLevel === 'danger';
 
   return (
@@ -33,7 +35,7 @@ export default function SafetyScreen() {
 
       <View
         style={styles.controlBlock}
-        pointerEvents={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? 'none' : 'auto'}
+        pointerEvents={mode === 'PRODUCTION' ? 'none' : 'auto'}
       >
         <Text style={[styles.controlLabel, { color: colors.mutedForeground }]}>수위·경보 시뮬레이션</Text>
         <SegmentedControl options={SAFETY_OPTIONS} value={safetyLevel} onChange={setSafetyLevel} />

@@ -2,8 +2,6 @@ import assert from 'node:assert';
 import { test, describe } from 'node:test';
 import {
   sortPlacesByDistance,
-  getHaversineDistance,
-  isValidCoordinate,
 } from '../haversine.ts';
 
 describe('Milestone 1 Recommendation & Cooldown Verification', () => {

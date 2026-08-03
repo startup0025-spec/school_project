@@ -19,8 +19,8 @@ describe('isValidCoordinate', () => {
     assert.strictEqual(isValidCoordinate(-90.1, 129.0756), false);
     assert.strictEqual(isValidCoordinate(NaN, 129.0756), false);
     assert.strictEqual(isValidCoordinate(Infinity, 129.0756), false);
-    assert.strictEqual(isValidCoordinate(null as any, 129.0756), false);
-    assert.strictEqual(isValidCoordinate(undefined as any, 129.0756), false);
+    assert.strictEqual(isValidCoordinate(null as unknown as number, 129.0756), false);
+    assert.strictEqual(isValidCoordinate(undefined as unknown as number, 129.0756), false);
   });
 
   test('invalid longitude returns false', () => {
@@ -28,8 +28,8 @@ describe('isValidCoordinate', () => {
     assert.strictEqual(isValidCoordinate(35.1796, -180.1), false);
     assert.strictEqual(isValidCoordinate(35.1796, NaN), false);
     assert.strictEqual(isValidCoordinate(35.1796, Infinity), false);
-    assert.strictEqual(isValidCoordinate(35.1796, null as any), false);
-    assert.strictEqual(isValidCoordinate(35.1796, undefined as any), false);
+    assert.strictEqual(isValidCoordinate(35.1796, null as unknown as number), false);
+    assert.strictEqual(isValidCoordinate(35.1796, undefined as unknown as number), false);
   });
 });
 

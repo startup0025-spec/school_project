@@ -1,10 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { DeviceEventEmitter, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  DeviceEventEmitter,
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { Carousel, CarouselRef } from 'react-native-reanimated-carousel';
 import { useColors } from '@/hooks/useColors';
 import { useRipple, type WaterSource } from '@/context/RippleContext';
+import { useAppMode } from '@/context/AppModeContext';
 import { WaveformVisualizer, type WaveformMode } from '@/components/WaveformVisualizer';
 import { WATER_SOURCE_LABELS } from '@/constants/mockData';
 import {
@@ -12,17 +23,67 @@ import {
   stopAmbientSound,
 } from '@/lib/services/audio_engine_service';
 
-const SOURCE_OPTIONS: { value: WaterSource; label: string }[] = [
-  { value: 'stream', label: '시냇물' },
-  { value: 'river', label: '강물' },
-  { value: 'sea', label: '바다' },
+interface WaterCategoryItem {
+  value: WaterSource;
+  label: string;
+  subLabel: string;
+  description: string;
+  iconName: keyof typeof Feather.glyphMap;
+}
+
+const CAROUSEL_CATEGORIES: WaterCategoryItem[] = [
+  {
+    value: 'sea',
+    label: '연안',
+    subLabel: '바다 / 해안',
+    description: '파도 소리가 깊고 넓게 스르륵 밀려와요.',
+    iconName: 'anchor',
+  },
+  {
+    value: 'national_river',
+    label: '국가하천',
+    subLabel: '큰 강물',
+    description: '웅장하고 깊은 물길이 흘러가요.',
+    iconName: 'wind',
+  },
+  {
+    value: 'lake',
+    label: '호소',
+    subLabel: '호수 / 저수지',
+    description: '잔잔하고 평화로운 수면 소리가 들려요.',
+    iconName: 'sun',
+  },
+  {
+    value: 'local_river',
+    label: '지방하천',
+    subLabel: '도심 하천',
+    description: '활기차게 요동치는 하천 물길이에요.',
+    iconName: 'activity',
+  },
+
 ];
+
+const { width: PAGE_WIDTH } = Dimensions.get('window');
+const ITEM_WIDTH = Math.min(PAGE_WIDTH * 0.72, 290);
 
 export default function SoundScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
   const { waterSource, setWaterSource, safetyLevel } = useRipple();
+  const { mode } = useAppMode();
   const [playing, setPlaying] = useState(true);
+
+  const carouselRef = useRef<CarouselRef>(null);
+  const isProduction = mode === 'PRODUCTION';
+
+  // Synchronize carousel position when active waterSource updates (e.g. via geofence trigger in PROD mode)
+  useEffect(() => {
+    const targetIdx = CAROUSEL_CATEGORIES.findIndex((item) => item.value === waterSource);
+    if (targetIdx !== -1 && carouselRef.current) {
+      carouselRef.current.scrollTo({ index: targetIdx, animated: true });
+    }
+  }, [waterSource]);
 
   // Lockscreen event listeners for 2-way state synchronization
   useEffect(() => {
@@ -38,13 +99,11 @@ export default function SoundScreen() {
     };
   }, []);
 
-  // 화면 마운트 시 자동 재생 (isInitialMount로 이중 기동 준수)
   const isInitialMount = useRef(true);
 
-  // [Step 4-A] 재생 상태 및 워터소스 변화 시 오디오 엔진 제어
+  // Control audio engine when playing state or waterSource changes
   useEffect(() => {
     if (isInitialMount.current) {
-      // 첫 렌더링: 자동 재생 시작 (playDynamicMix 연동)
       playDynamicMix(waterSource, safetyLevel === 'danger').catch((err) =>
         console.warn('[SoundScreen] Auto-play on mount failed:', err)
       );
@@ -52,12 +111,10 @@ export default function SoundScreen() {
       return;
     }
     if (playing) {
-      // 재생 켜지거나 워터소스 변경 시 오디오 엔진 연결
       playDynamicMix(waterSource, safetyLevel === 'danger').catch((err) =>
         console.warn('[SoundScreen] playDynamicMix failed:', err)
       );
     } else {
-      // 일시정지: 오디오 엔진 정지
       stopAmbientSound().catch((err) =>
         console.warn('[SoundScreen] stopAmbientSound failed:', err)
       );
@@ -65,7 +122,10 @@ export default function SoundScreen() {
   }, [playing, waterSource, safetyLevel]);
 
   const glitch = safetyLevel === 'danger';
-  const info = WATER_SOURCE_LABELS[waterSource];
+  const info = WATER_SOURCE_LABELS[waterSource] || {
+    label: '수변 공간',
+    description: '물소리가 은은하게 섞여서 들려와요.',
+  };
 
   let visualMode: WaveformMode = 'flow';
   if (glitch) visualMode = 'glitch';
@@ -75,9 +135,19 @@ export default function SoundScreen() {
     <View
       style={[
         styles.screen,
-        { backgroundColor: colors.background, paddingTop: insets.top + 20, paddingBottom: insets.bottom + 96 },
+        {
+          backgroundColor: colors.background,
+        },
       ]}
     >
+      <ScrollView 
+        contentContainerStyle={{
+          paddingTop: insets.top + 16,
+          paddingBottom: 24,
+          flexGrow: 1,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
       <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>지금 흐르는 소리</Text>
       <Text style={[styles.title, { color: colors.foreground }]}>
         {glitch ? '소리가 흐려지고 있어요' : info.label}
@@ -92,37 +162,100 @@ export default function SoundScreen() {
         <WaveformVisualizer mode={visualMode} color={glitch ? colors.destructive : colors.primary} />
       </View>
 
-      <View
-        style={styles.chipRow}
-        pointerEvents={process.env.EXPO_PUBLIC_BUILD_MODE === 'PRODUCTION' ? 'none' : 'auto'}
-      >
-        {SOURCE_OPTIONS.map((option) => {
-          const active = option.value === waterSource;
-          return (
-            <Pressable
-              key={option.value}
-              onPress={() => {
-                if (!active) {
-                  Haptics.selectionAsync();
-                  setWaterSource(option.value);
-                }
-              }}
-              style={[
-                styles.chip,
-                { borderColor: colors.border },
-                active && { backgroundColor: colors.primary, borderColor: colors.primary },
-              ]}
-              testID={`source-${option.value}`}
-            >
-              <Text style={[styles.chipText, { color: active ? colors.primaryForeground : colors.foreground }]}>
-                {option.label}
-              </Text>
-            </Pressable>
-          );
-        })}
+      <View style={styles.carouselHeader}>
+        <Text style={[styles.carouselModeText, { color: colors.mutedForeground }]}>
+          {isProduction
+            ? 'PROD 모드: 위치 지오펜스 감지에 따라 소리가 자동 전환됩니다'
+            : 'DEMO 모드: 3D 카루셀을 수동으로 넘겨 5가지 물소리를 들어보세요'}
+        </Text>
       </View>
 
-      <View style={[styles.nowPlaying, { backgroundColor: colors.secondary, borderRadius: colors.radius }]}>
+      {/* 3D Carousel container with pointerEvents for DEMO ('auto') vs PROD ('none') */}
+      <View
+        style={styles.carouselWrapper}
+        pointerEvents={isProduction ? 'none' : 'auto'}
+      >
+        <Carousel
+          ref={carouselRef}
+          loop={true}
+          itemSize={ITEM_WIDTH}
+          style={styles.carouselStyle}
+          layout={{
+            type: 'parallax',
+            scale: 0.92,
+            offset: 48,
+            adjacentScale: 0.78,
+          }}
+          data={CAROUSEL_CATEGORIES}
+          scrollEnabled={!isProduction}
+          onSnapToItem={(index: number) => {
+            if (!isProduction) {
+              const item = CAROUSEL_CATEGORIES[index];
+              if (item && item.value !== waterSource) {
+                Haptics.selectionAsync();
+                setWaterSource(item.value);
+              }
+            }
+          }}
+          renderItem={({ item }: { item: WaterCategoryItem }) => {
+            const active = item.value === waterSource;
+            return (
+              <Pressable
+                onPress={() => {
+                  if (!isProduction && !active) {
+                    Haptics.selectionAsync();
+                    setWaterSource(item.value);
+                  }
+                }}
+                style={[
+                  styles.cardItem,
+                  {
+                    backgroundColor: active ? colors.card : colors.secondary,
+                    borderColor: active ? colors.primary : colors.border,
+                  },
+                ]}
+                testID={`category-${item.value}`}
+              >
+                <View style={styles.cardHeaderRow}>
+                  <View
+                    style={[
+                      styles.iconBadge,
+                      { backgroundColor: active ? colors.primary : colors.border },
+                    ]}
+                  >
+                    <Feather
+                      name={item.iconName}
+                      size={16}
+                      color={active ? colors.primaryForeground : colors.foreground}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.subLabel,
+                      { color: active ? colors.primary : colors.mutedForeground },
+                    ]}
+                  >
+                    {item.subLabel}
+                  </Text>
+                </View>
+                <Text style={[styles.itemTitle, { color: colors.foreground }]}>
+                  {item.label}
+                </Text>
+                <Text
+                  style={[styles.itemDesc, { color: colors.mutedForeground }]}
+                  numberOfLines={2}
+                >
+                  {item.description}
+                </Text>
+              </Pressable>
+            );
+          }}
+        />
+      </View>
+
+      </ScrollView>
+      
+      <View style={[styles.nowPlaying, { backgroundColor: colors.secondary, borderRadius: colors.radius, marginBottom: tabBarHeight + 16 }]}>
         <View style={styles.nowPlayingText}>
           <Text style={[styles.nowPlayingTitle, { color: colors.foreground }]}>화면을 꺼도 소리는 계속 흘러요</Text>
           <Text style={[styles.nowPlayingSub, { color: colors.mutedForeground }]}>
@@ -132,7 +265,6 @@ export default function SoundScreen() {
         <Pressable
           onPress={() => {
             Haptics.selectionAsync();
-            // 클릭 시 UI 상태 + 오디오 엔진 제어를 함께 토글
             setPlaying((p) => !p);
           }}
           style={[styles.playButton, { backgroundColor: colors.primary }]}
@@ -167,26 +299,69 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   visualCard: {
-    marginTop: 28,
-    padding: 20,
+    marginTop: 20,
+    padding: 16,
     borderRadius: 22,
     borderWidth: 1,
   },
-  chipRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 20,
+  carouselHeader: {
+    marginTop: 16,
+    marginBottom: 4,
   },
-  chip: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 16,
-    borderWidth: 1,
+  carouselModeText: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    textAlign: 'center',
+  },
+  carouselWrapper: {
+    marginTop: 8,
+    marginBottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  carouselStyle: {
+    width: PAGE_WIDTH - 48,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  chipText: {
-    fontSize: 14,
+  cardItem: {
+    width: ITEM_WIDTH,
+    height: 145,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    padding: 16,
+    justifyContent: 'space-between',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  iconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subLabel: {
+    fontSize: 12,
     fontFamily: 'Inter_600SemiBold',
+  },
+  itemTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter_700Bold',
+    marginTop: 6,
+  },
+  itemDesc: {
+    fontSize: 12,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 16,
   },
   nowPlaying: {
     marginTop: 'auto',
